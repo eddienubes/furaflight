@@ -32,13 +32,23 @@ jobs:
       - name: Format check
         run: bun run format:check
 
-      - name: Build
+      - name: Build (single-target local-dev artifact, dist/furaflight)
         run: bun run build
+
+      - name: Generate platform package manifests
+        run: bun run generate:platforms
+
+      - name: Build all 8 platform binaries (cross-compiled from this runner)
+        run: bun run build:platforms
 
       - name: Configure npm auth
         run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm
-        run: bun publish --access public
+      # Publishes all 8 @furaflight/mcp-<platform> packages first, then the
+      # main @furaflight/mcp package — so every version its
+      # optionalDependencies point at already exists by the time it's
+      # published (see scripts/publish-platforms.ts).
+      - name: Publish platform packages, then the main package
+        run: bun run publish:platforms
