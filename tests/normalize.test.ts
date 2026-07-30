@@ -161,6 +161,42 @@ describe("normalizeFlight", () => {
 
     const normalized = normalizeFlight(returnFlight, "EUR", new Map());
     expect(normalized.duration).toEqual({ departure: 28800, return: 30000, total: 58800 });
-    expect(normalized.stops).toBe(2);
+    // Outbound has a connection (2 legs -> 1 stop), return is nonstop (1 leg -> 0 stops).
+    // stops must reflect the per-direction max, not the combined route length (which
+    // would wrongly give 3 legs - 1 = 2).
+    expect(normalized.stops).toBe(1);
+  });
+
+  test("computes stops per direction for a nonstop-both-ways round trip", () => {
+    const outboundLeg = { ...onewayFlight.route[0]!, id: "out_0", return: 0 };
+    const returnLeg = { ...onewayFlight.route[0]!, id: "return_0", return: 1 };
+    const nonstopRoundTrip: FlightlistFlight = {
+      ...onewayFlight,
+      duration: { departure: 5400, return: 5400, total: 10800 },
+      route: [outboundLeg, returnLeg],
+    };
+
+    const normalized = normalizeFlight(nonstopRoundTrip, "EUR", new Map());
+    // Both directions are nonstop (1 leg each), so this must be 0, not
+    // route.length - 1 (which would wrongly give 2 legs - 1 = 1).
+    expect(normalized.stops).toBe(0);
+  });
+
+  test("computes stops per direction when the return leg has the connection", () => {
+    const outboundLeg = { ...onewayFlight.route[0]!, id: "out_0", return: 0 };
+    const returnLegs = onewayFlight.route.map((leg, index) => ({
+      ...leg,
+      id: `return_${index}`,
+      return: 1 as const,
+    }));
+    const asymmetricRoundTrip: FlightlistFlight = {
+      ...onewayFlight,
+      duration: { departure: 5400, return: 28800, total: 34200 },
+      route: [outboundLeg, ...returnLegs],
+    };
+
+    const normalized = normalizeFlight(asymmetricRoundTrip, "EUR", new Map());
+    // Outbound is nonstop (1 leg -> 0 stops), return has a connection (2 legs -> 1 stop).
+    expect(normalized.stops).toBe(1);
   });
 });
