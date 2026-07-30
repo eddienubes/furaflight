@@ -24,7 +24,7 @@ export const fetchWithTimeout = async (url: string, timeoutMs: number): Promise<
   try {
     return await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
   } catch (error) {
-    if (error instanceof Error && error.name === "AbortError") {
+    if (error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")) {
       throw new FlightlistTimeoutError(`Request to ${url} timed out after ${timeoutMs}ms.`);
     }
     throw error;

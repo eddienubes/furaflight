@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import { searchInputSchema } from "./search.schema.ts";
 
-function futureDate(daysFromNow: number): string {
+const futureDate = (daysFromNow: number): string => {
   const date = new Date();
   date.setUTCDate(date.getUTCDate() + daysFromNow);
   return date.toISOString().slice(0, 10);
-}
+};
 
 describe("searchInputSchema — valid shapes", () => {
   test("accepts a minimal oneway search and applies defaults", () => {
