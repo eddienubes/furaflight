@@ -16,15 +16,17 @@ export class FlightlistTimeoutError extends Error {
 
 /** A `from`/`to` token could not be resolved to exactly one location. */
 export class LocationResolutionError extends Error {
-  constructor(
-    public readonly token: string,
-    public readonly candidates: string[],
-  ) {
+  readonly token: string;
+  readonly candidates: string[];
+
+  constructor(token: string, candidates: string[]) {
     super(
       candidates.length === 0
         ? `Could not resolve location "${token}".`
         : `"${token}" is ambiguous. Did you mean: ${candidates.join(", ")}?`,
     );
     this.name = "LocationResolutionError";
+    this.token = token;
+    this.candidates = candidates;
   }
 }

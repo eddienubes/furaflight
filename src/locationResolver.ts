@@ -113,7 +113,11 @@ export class LocationResolver {
   private locations: LocationEntry[] | undefined;
   private airlines: Map<string, string> | undefined;
 
-  constructor(private readonly cacheDir: string = defaultCacheDir()) {}
+  private readonly cacheDir: string;
+
+  constructor(cacheDir: string = defaultCacheDir()) {
+    this.cacheDir = cacheDir;
+  }
 
   private async ensureLoaded(): Promise<void> {
     if (this.locations && this.airlines) return;

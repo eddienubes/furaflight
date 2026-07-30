@@ -86,10 +86,13 @@ function buildRequestParams(
 }
 
 export class FlightlistProvider implements FlightSearchProvider {
-  constructor(
-    private readonly client: FlightlistApiClient,
-    private readonly locationResolver: LocationResolver,
-  ) {}
+  private readonly client: FlightlistApiClient;
+  private readonly locationResolver: LocationResolver;
+
+  constructor(client: FlightlistApiClient, locationResolver: LocationResolver) {
+    this.client = client;
+    this.locationResolver = locationResolver;
+  }
 
   async search(params: NormalizedSearchParams): Promise<NormalizedFlight[]> {
     const [flyFrom, flyTo] = await Promise.all([

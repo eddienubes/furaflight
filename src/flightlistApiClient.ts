@@ -9,7 +9,11 @@ const SEARCH_URL = "https://www.flightlist.io/api/search.php";
 const DEFAULT_TIMEOUT_MS = 15_000;
 
 export class FlightlistApiClient {
-  constructor(private readonly timeoutMs: number = DEFAULT_TIMEOUT_MS) {}
+  private readonly timeoutMs: number;
+
+  constructor(timeoutMs: number = DEFAULT_TIMEOUT_MS) {
+    this.timeoutMs = timeoutMs;
+  }
 
   async search(params: FlightlistSearchRequestParams): Promise<FlightlistSearchResponse> {
     const query = new URLSearchParams();
