@@ -1,13 +1,22 @@
 {
-  "name": "flightlist-mcp",
+  "name": "@furaflight/mcp",
   "version": "0.1.0",
-  "private": true,
   "description": "MCP server exposing a flight search tool backed by flightlist.io",
+  "homepage": "https://github.com/eddienubes/furaflight#readme",
+  "bugs": {
+    "url": "https://github.com/eddienubes/furaflight/issues"
+  },
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eddienubes/furaflight.git"
+  },
   "bin": {
-    "flightlist-mcp": "./src/main.ts"
+    "furaflight": "dist/furaflight"
   },
   "type": "module",
   "scripts": {
+    "build": "bun build --compile --bytecode --minify --format esm --sourcemap --outfile dist/furaflight ./src/main.ts",
     "start": "bun run src/main.ts",
     "test": "bun test",
     "lint": "oxlint",

@@ -7,7 +7,7 @@ import {
 } from "./flight-list.errors.ts";
 import { extractJsonArray } from "./flight-list.utils.ts";
 
-const useAppDirs = (appDirs as any).default as typeof appDirs
+const useAppDirs = (appDirs as any).default as typeof appDirs;
 
 /**
  * Minimal typing for flightlist.io's static `locations.js` / `airlines.js`

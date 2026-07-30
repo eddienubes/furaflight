@@ -1,4 +1,4 @@
-# flightlist-mcp
+# furaflight
 
 An MCP (Model Context Protocol) server exposing a single `search` tool that
 wraps [flightlist.io](https://www.flightlist.io)'s unauthenticated flight
