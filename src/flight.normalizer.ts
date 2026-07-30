@@ -1,4 +1,4 @@
-import type { FlightlistFlight } from "./types/flightlist.ts";
+import type { FlightlistFlight } from "./flight-list.api-client.ts";
 
 export interface NormalizedFlightLeg {
   from: string;

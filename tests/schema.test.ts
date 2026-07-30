@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { searchInputSchema } from "../src/schema.ts";
+import { searchInputSchema } from "../src/search.schema.ts";
 
 function futureDate(daysFromNow: number): string {
   const date = new Date();

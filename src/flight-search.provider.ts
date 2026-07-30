@@ -1,7 +1,9 @@
-import type { FlightlistApiClient } from "./flightlistApiClient.ts";
-import type { LocationResolver } from "./locationResolver.ts";
-import { FlightNormalizer, type NormalizedFlight } from "./normalize.ts";
-import type { FlightlistSearchRequestParams } from "./types/flightlist.ts";
+import type {
+  FlightlistApiClient,
+  FlightlistSearchRequestParams,
+} from "./flight-list.api-client.ts";
+import { FlightNormalizer, type NormalizedFlight } from "./flight.normalizer.ts";
+import type { LocationResolver } from "./location.resolver.ts";
 import { toUpstreamDate } from "./utils.ts";
 
 export interface NormalizedSearchParams {

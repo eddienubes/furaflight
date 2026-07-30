@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { FlightSearchProvider } from "./provider.ts";
-import { searchInputSchema } from "./schema.ts";
+import type { FlightSearchProvider } from "./flight-search.provider.ts";
+import { searchInputSchema } from "./search.schema.ts";
 
 export const createServer = (provider: FlightSearchProvider): McpServer => {
   const server = new McpServer({ name: "flightlist-mcp", version: "0.1.0" });

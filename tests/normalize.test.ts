@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { FlightNormalizer } from "../src/normalize.ts";
-import type { FlightlistFlight } from "../src/types/flightlist.ts";
+import type { FlightlistFlight } from "../src/flight-list.api-client.ts";
+import { FlightNormalizer } from "../src/flight.normalizer.ts";
 
 const normalizer = new FlightNormalizer();
 
