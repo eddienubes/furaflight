@@ -8,7 +8,7 @@ upstream API's parameter names.
 
 ## Requirements
 
-- [Bun](https://bun.sh)
+- [Bun](https://bun.sh) — version pinned via `mise.toml`
 
 ## Install & run
 
