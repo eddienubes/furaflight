@@ -4,11 +4,11 @@
   "private": true,
   "description": "MCP server exposing a flight search tool backed by flightlist.io",
   "bin": {
-    "flightlist-mcp": "./src/index.ts"
+    "flightlist-mcp": "./src/main.ts"
   },
   "type": "module",
   "scripts": {
-    "start": "bun run src/index.ts",
+    "start": "bun run src/main.ts",
     "test": "bun test",
     "lint": "oxlint",
     "format": "oxfmt",
