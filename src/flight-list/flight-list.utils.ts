@@ -1,4 +1,4 @@
-import { FlightlistApiError } from "./errors.ts";
+import { FlightlistApiError } from "./flight-list.errors.ts";
 
 /** Converts a `YYYY-MM-DD` date into the `DD/MM/YYYY` format flightlist.io expects. */
 export const toUpstreamDate = (isoDate: string): string => {

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import { FlightlistApiClient, type FlightlistSearchRequestParams } from "./api-client.ts";
-import { FlightlistTimeoutError } from "./errors.ts";
+import {
+  FlightlistApiClient,
+  type FlightlistSearchRequestParams,
+} from "./flight-list.api-client.ts";
+import { FlightlistTimeoutError } from "./flight-list.errors.ts";
 
 const params: FlightlistSearchRequestParams = {
   fly_from: "CDG",

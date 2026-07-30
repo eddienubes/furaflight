@@ -1,7 +1,11 @@
 import { join } from "node:path";
 import appDirs from "appdirsjs";
-import { FlightlistApiError, FlightlistTimeoutError, LocationResolutionError } from "./errors.ts";
-import { extractJsonArray } from "./utils.ts";
+import {
+  FlightlistApiError,
+  FlightlistTimeoutError,
+  LocationResolutionError,
+} from "./flight-list.errors.ts";
+import { extractJsonArray } from "./flight-list.utils.ts";
 
 /**
  * Minimal typing for flightlist.io's static `locations.js` / `airlines.js`

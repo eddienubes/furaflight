@@ -2,9 +2,9 @@ import type {
   FlightlistApiClient,
   FlightlistFlight,
   FlightlistSearchRequestParams,
-} from "./api-client.ts";
-import type { LocationResolver } from "./location.resolver.ts";
-import { toUpstreamDate } from "./utils.ts";
+} from "./flight-list.api-client.ts";
+import type { LocationResolver } from "./flight-list.location-resolver.ts";
+import { toUpstreamDate } from "./flight-list.utils.ts";
 import type {
   FlightSearchProvider,
   NormalizedFlight,

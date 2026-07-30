@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import type { FlightlistApiClient, FlightlistFlight } from "./api-client.ts";
-import type { LocationResolver } from "./location.resolver.ts";
-import { FlightlistProvider } from "./provider.ts";
+import type { FlightlistApiClient, FlightlistFlight } from "./flight-list.api-client.ts";
+import type { LocationResolver } from "./flight-list.location-resolver.ts";
+import { FlightlistProvider } from "./flight-list.provider.ts";
 
 const provider = new FlightlistProvider({} as FlightlistApiClient, {} as LocationResolver);
 

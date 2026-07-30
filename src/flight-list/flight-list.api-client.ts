@@ -1,4 +1,4 @@
-import { FlightlistApiError, FlightlistTimeoutError } from "./errors.ts";
+import { FlightlistApiError, FlightlistTimeoutError } from "./flight-list.errors.ts";
 
 const SEARCH_URL = "https://www.flightlist.io/api/search.php";
 const DEFAULT_TIMEOUT_MS = 15_000;
