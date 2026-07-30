@@ -1,0 +1,29 @@
+{
+  "name": "flightlist-mcp",
+  "version": "0.1.0",
+  "description": "MCP server exposing a flight search tool backed by flightlist.io",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "flightlist-mcp": "./src/index.ts"
+  },
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "test": "bun test",
+    "lint": "oxlint",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "oxfmt": "^0.61.0",
+    "oxlint": "^1.76.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.4.3"
+  }
+}
