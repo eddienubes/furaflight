@@ -1,11 +1,11 @@
 #!/usr/bin/env bun
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { FlightlistApiClient } from "./flight-list.api-client.ts";
-import { FlightlistProvider } from "./flight-search.provider.ts";
-import { LocationResolver } from "./location.resolver.ts";
+import { FlightlistApiClient } from "./flight-list/api-client.ts";
+import { LocationResolver } from "./flight-list/location.resolver.ts";
+import { FlightlistProvider } from "./flight-list/provider.ts";
 import { createServer } from "./mcp.server.ts";
 
-const provider = new FlightlistProvider(new FlightlistApiClient(), new LocationResolver());
+const provider = new FlightlistProvider(new FlightlistApiClient(), await LocationResolver.create());
 const server = createServer(provider);
 
 await server.connect(new StdioServerTransport());

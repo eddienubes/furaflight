@@ -1,4 +1,3 @@
-/** Upstream HTTP error, non-2xx response, or malformed JSON from flightlist.io. */
 export class FlightlistApiError extends Error {
   constructor(message: string) {
     super(message);
@@ -6,7 +5,6 @@ export class FlightlistApiError extends Error {
   }
 }
 
-/** A fetch to flightlist.io did not complete within the allotted timeout. */
 export class FlightlistTimeoutError extends Error {
   constructor(message: string) {
     super(message);
@@ -14,7 +12,6 @@ export class FlightlistTimeoutError extends Error {
   }
 }
 
-/** A `from`/`to` token could not be resolved to exactly one location. */
 export class LocationResolutionError extends Error {
   readonly token: string;
   readonly candidates: string[];

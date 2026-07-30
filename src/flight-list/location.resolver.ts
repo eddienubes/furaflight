@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import appDirs from "appdirsjs";
-import { FlightlistApiError, LocationResolutionError } from "./errors.ts";
-import { extractJsonArray, fetchWithTimeout } from "./utils.ts";
+import { FlightlistApiError, FlightlistTimeoutError, LocationResolutionError } from "./errors.ts";
+import { extractJsonArray } from "./utils.ts";
 
 /**
  * Minimal typing for flightlist.io's static `locations.js` / `airlines.js`
@@ -45,18 +45,32 @@ const defaultCacheDir = (): string => appDirs({ appName: "flightlist-mcp" }).cac
  * the airline code -> name map, both fetched at runtime and disk-cached.
  */
 export class LocationResolver {
-  private locations: LocationEntry[] | undefined;
-  private airlines: Map<string, string> | undefined;
+  private readonly locations: LocationEntry[];
+  private readonly airlines: Map<string, string>;
 
-  private readonly cacheDir: string;
-
-  constructor(cacheDir: string = defaultCacheDir()) {
-    this.cacheDir = cacheDir;
+  protected constructor(locations: LocationEntry[], airlines: Map<string, string>) {
+    this.locations = locations;
+    this.airlines = airlines;
   }
 
-  /** Resolves a (possibly comma-separated) `from`/`to` field into upstream-ready codes. */
-  async resolve(field: string): Promise<string> {
-    await this.ensureLoaded();
+  static async create(cacheDir: string = defaultCacheDir()): Promise<LocationResolver> {
+    const [locations, airlineEntries] = await Promise.all([
+      LocationResolver.loadDataset<LocationEntry>(
+        join(cacheDir, "locations.json"),
+        LOCATIONS_URL,
+        extractJsonArray as (text: string) => LocationEntry[],
+      ),
+      LocationResolver.loadDataset<AirlineEntry>(
+        join(cacheDir, "airlines.json"),
+        AIRLINES_URL,
+        extractJsonArray as (text: string) => AirlineEntry[],
+      ),
+    ]);
+    const airlines = new Map(airlineEntries.map((airline) => [airline.id, airline.name]));
+    return new LocationResolver(locations, airlines);
+  }
+
+  resolve(field: string): string {
     const tokens = field
       .split(",")
       .map((token) => token.trim())
@@ -65,46 +79,35 @@ export class LocationResolver {
     return tokens.map((token) => this.resolveToken(token)).join(",");
   }
 
-  async airlineNames(): Promise<ReadonlyMap<string, string>> {
-    await this.ensureLoaded();
-    return this.airlines ?? new Map();
+  airlineNames(): ReadonlyMap<string, string> {
+    return this.airlines;
   }
 
-  private async ensureLoaded(): Promise<void> {
-    if (this.locations && this.airlines) return;
-    const [locations, airlineEntries] = await Promise.all([
-      this.loadDataset<LocationEntry>(
-        join(this.cacheDir, "locations.json"),
-        LOCATIONS_URL,
-        extractJsonArray as (text: string) => LocationEntry[],
-      ),
-      this.loadDataset<AirlineEntry>(
-        join(this.cacheDir, "airlines.json"),
-        AIRLINES_URL,
-        extractJsonArray as (text: string) => AirlineEntry[],
-      ),
-    ]);
-    this.locations = locations;
-    this.airlines = new Map(airlineEntries.map((airline) => [airline.id, airline.name]));
-  }
-
-  /**
-   * Loads a dataset from its on-disk cache if fresh, otherwise re-fetches it from
-   * `url`, parses it with `parse`, and rewrites the cache; falls back to a stale
-   * cache if the fetch fails and no cache exists is a hard failure.
-   */
-  private async loadDataset<T>(
+  private static async loadDataset<T>(
     cacheFile: string,
     url: string,
     parse: (text: string) => T[],
   ): Promise<T[]> {
-    const cached = await this.readCache<T>(cacheFile);
+    const cached = await LocationResolver.readCache<T>(cacheFile);
     if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
       return cached.data;
     }
 
     try {
-      const response = await fetchWithTimeout(url, FETCH_TIMEOUT_MS);
+      let response: Response;
+      try {
+        response = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          (error.name === "TimeoutError" || error.name === "AbortError")
+        ) {
+          throw new FlightlistTimeoutError(
+            `Request to ${url} timed out after ${FETCH_TIMEOUT_MS}ms.`,
+          );
+        }
+        throw error;
+      }
       if (!response.ok)
         throw new FlightlistApiError(`Failed to fetch ${url}: HTTP ${response.status}.`);
       const data = parse(await response.text());
@@ -119,7 +122,7 @@ export class LocationResolver {
     }
   }
 
-  private async readCache<T>(file: string): Promise<CacheFile<T> | undefined> {
+  private static async readCache<T>(file: string): Promise<CacheFile<T> | undefined> {
     try {
       const bunFile = Bun.file(file);
       if (!(await bunFile.exists())) return undefined;
@@ -136,7 +139,7 @@ export class LocationResolver {
    * narrows to exactly one candidate.
    */
   private resolveToken(token: string): string {
-    const entries = this.locations ?? [];
+    const entries = this.locations;
     const normalized = token.toLowerCase();
 
     const exactCode = this.matchAndDedupe(
@@ -171,7 +174,6 @@ export class LocationResolver {
     throw this.ambiguous(token, fuzzy);
   }
 
-  /** Filters entries by `predicate`, then dedupes by resolved value (first occurrence wins). */
   private matchAndDedupe(
     entries: LocationEntry[],
     predicate: (entry: LocationEntry) => boolean,
@@ -185,7 +187,6 @@ export class LocationResolver {
     return [...seen.values()];
   }
 
-  /** The value flightlist.io's search API expects for this entry (its code, or id for regions). */
   private resolvedValueOf(entry: LocationEntry): string {
     return entry.type === "region" ? entry.id : (entry.code ?? entry.id);
   }

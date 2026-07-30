@@ -1,5 +1,4 @@
-import { FlightlistApiError } from "./errors.ts";
-import { fetchWithTimeout } from "./utils.ts";
+import { FlightlistApiError, FlightlistTimeoutError } from "./errors.ts";
 
 const SEARCH_URL = "https://www.flightlist.io/api/search.php";
 const DEFAULT_TIMEOUT_MS = 15_000;
@@ -152,9 +151,11 @@ export interface FlightlistSearchRequestParams {
 
 export class FlightlistApiClient {
   private readonly timeoutMs: number;
+  private readonly baseUrl: string;
 
-  constructor(timeoutMs: number = DEFAULT_TIMEOUT_MS) {
+  constructor(timeoutMs: number = DEFAULT_TIMEOUT_MS, baseUrl: string = SEARCH_URL) {
     this.timeoutMs = timeoutMs;
+    this.baseUrl = baseUrl;
   }
 
   async search(params: FlightlistSearchRequestParams): Promise<FlightlistSearchResponse> {
@@ -164,8 +165,20 @@ export class FlightlistApiClient {
       query.set(key, String(value));
     }
 
-    const url = `${SEARCH_URL}?${query.toString()}`;
-    const response = await fetchWithTimeout(url, this.timeoutMs);
+    const url = `${this.baseUrl}?${query.toString()}`;
+
+    let response: Response;
+    try {
+      response = await fetch(url, { signal: AbortSignal.timeout(this.timeoutMs) });
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        (error.name === "TimeoutError" || error.name === "AbortError")
+      ) {
+        throw new FlightlistTimeoutError(`Request to ${url} timed out after ${this.timeoutMs}ms.`);
+      }
+      throw error;
+    }
 
     if (!response.ok) {
       throw new FlightlistApiError(`flightlist.io search returned HTTP ${response.status}.`);
