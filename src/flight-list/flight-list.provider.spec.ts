@@ -1,9 +1,48 @@
 import { describe, expect, it } from "bun:test";
-import type { FlightlistApiClient, FlightlistFlight } from "./flight-list.api-client.ts";
+import type {
+  FlightlistApiClient,
+  FlightlistFlight,
+  FlightlistSearchResponse,
+} from "./flight-list.api-client.ts";
 import type { LocationResolver } from "./flight-list.location-resolver.ts";
 import { FlightlistProvider } from "./flight-list.provider.ts";
+import type { NormalizedSearchParams } from "../flight-search.provider.ts";
 
-const provider = new FlightlistProvider({} as FlightlistApiClient, {} as LocationResolver);
+const searchParams: NormalizedSearchParams = {
+  from: "CDG",
+  to: "SOF",
+  flightType: "oneway",
+  departDateFrom: "2026-07-30",
+  adults: 1,
+  children: 0,
+  infants: 0,
+  cabinClass: "M",
+  currency: "EUR",
+  limit: 1,
+  sort: "price",
+};
+
+/** Builds a FlightlistProvider wired to fake upstream/location dependencies. */
+function createProvider(
+  flights: FlightlistFlight[],
+  airlineNames: ReadonlyMap<string, string>,
+): FlightlistProvider {
+  const client = {
+    search: async (): Promise<FlightlistSearchResponse> => ({
+      search_id: "search-id",
+      currency: "EUR",
+      fx_rate: 1,
+      data: flights,
+    }),
+  } as unknown as FlightlistApiClient;
+
+  const locationResolver = {
+    resolve: (field: string) => field,
+    airlineNames: () => airlineNames,
+  } as unknown as LocationResolver;
+
+  return new FlightlistProvider(client, locationResolver);
+}
 
 // Trimmed fixture based on a real flightlist.io response (oneway, one connection).
 const onewayFlight: FlightlistFlight = {
@@ -111,10 +150,10 @@ const onewayFlight: FlightlistFlight = {
 };
 
 describe(FlightlistProvider.name, () => {
-  describe(FlightlistProvider.prototype["normalizeFlight"].name, () => {
-    it("should trim a oneway upstream flight to the documented shape", () => {
-      const airlineNames = new Map([["LH", "Lufthansa"]]);
-      const normalized = provider["normalizeFlight"](onewayFlight, "EUR", airlineNames);
+  describe(FlightlistProvider.prototype.search.name, () => {
+    it("should trim a oneway upstream flight to the documented shape", async () => {
+      const provider = createProvider([onewayFlight], new Map([["LH", "Lufthansa"]]));
+      const [normalized] = await provider.search(searchParams);
 
       expect(normalized).toEqual({
         price: 224,
@@ -145,13 +184,15 @@ describe(FlightlistProvider.name, () => {
       });
     });
 
-    it("should fall back to the raw airline code when no name is known", () => {
-      const normalized = provider["normalizeFlight"](onewayFlight, "EUR", new Map());
-      expect(normalized.airlines).toEqual(["LH"]);
-      expect(normalized.legs[0]?.airline).toBe("LH");
+    it("should fall back to the raw airline code when no name is known", async () => {
+      const provider = createProvider([onewayFlight], new Map());
+      const [normalized] = await provider.search(searchParams);
+
+      expect(normalized?.airlines).toEqual(["LH"]);
+      expect(normalized?.legs[0]?.airline).toBe("LH");
     });
 
-    it("should include duration.return only for round trips", () => {
+    it("should include duration.return only for round trips", async () => {
       const returnLeg = {
         ...onewayFlight.route[0]!,
         id: "return_0",
@@ -163,15 +204,17 @@ describe(FlightlistProvider.name, () => {
         route: [...onewayFlight.route, returnLeg],
       };
 
-      const normalized = provider["normalizeFlight"](returnFlight, "EUR", new Map());
-      expect(normalized.duration).toEqual({ departure: 28800, return: 30000, total: 58800 });
+      const provider = createProvider([returnFlight], new Map());
+      const [normalized] = await provider.search(searchParams);
+
+      expect(normalized?.duration).toEqual({ departure: 28800, return: 30000, total: 58800 });
       // Outbound has a connection (2 legs -> 1 stop), return is nonstop (1 leg -> 0 stops).
       // stops must reflect the per-direction max, not the combined route length (which
       // would wrongly give 3 legs - 1 = 2).
-      expect(normalized.stops).toBe(1);
+      expect(normalized?.stops).toBe(1);
     });
 
-    it("should compute stops per direction for a nonstop-both-ways round trip", () => {
+    it("should compute stops per direction for a nonstop-both-ways round trip", async () => {
       const outboundLeg = { ...onewayFlight.route[0]!, id: "out_0", return: 0 };
       const returnLeg = { ...onewayFlight.route[0]!, id: "return_0", return: 1 };
       const nonstopRoundTrip: FlightlistFlight = {
@@ -180,13 +223,15 @@ describe(FlightlistProvider.name, () => {
         route: [outboundLeg, returnLeg],
       };
 
-      const normalized = provider["normalizeFlight"](nonstopRoundTrip, "EUR", new Map());
+      const provider = createProvider([nonstopRoundTrip], new Map());
+      const [normalized] = await provider.search(searchParams);
+
       // Both directions are nonstop (1 leg each), so this must be 0, not
       // route.length - 1 (which would wrongly give 2 legs - 1 = 1).
-      expect(normalized.stops).toBe(0);
+      expect(normalized?.stops).toBe(0);
     });
 
-    it("should compute stops per direction when the return leg has the connection", () => {
+    it("should compute stops per direction when the return leg has the connection", async () => {
       const outboundLeg = { ...onewayFlight.route[0]!, id: "out_0", return: 0 };
       const returnLegs = onewayFlight.route.map((leg, index) => ({
         ...leg,
@@ -199,9 +244,11 @@ describe(FlightlistProvider.name, () => {
         route: [outboundLeg, ...returnLegs],
       };
 
-      const normalized = provider["normalizeFlight"](asymmetricRoundTrip, "EUR", new Map());
+      const provider = createProvider([asymmetricRoundTrip], new Map());
+      const [normalized] = await provider.search(searchParams);
+
       // Outbound is nonstop (1 leg -> 0 stops), return has a connection (2 legs -> 1 stop).
-      expect(normalized.stops).toBe(1);
+      expect(normalized?.stops).toBe(1);
     });
   });
 });
