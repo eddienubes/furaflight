@@ -135,8 +135,9 @@ export interface FlightlistSearchRequestParams {
   flight_type: "oneway" | "return";
   adult_hand_bag: number;
   adult_hold_bag: number;
-  child_hand_bag: number;
-  child_hold_bag: number;
+  // Upstream rejects these unless the request also has children > 0.
+  child_hand_bag?: number;
+  child_hold_bag?: number;
   return_from?: string;
   return_to?: string;
   nights_in_dst_from?: number;

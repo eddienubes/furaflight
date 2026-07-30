@@ -62,8 +62,8 @@ function buildRequestParams(
     flight_type: params.flightType,
     adult_hand_bag: 0,
     adult_hold_bag: 0,
-    child_hand_bag: 0,
-    child_hold_bag: 0,
+    // Upstream rejects child_hand_bag/child_hold_bag unless children > 0.
+    ...(params.children > 0 ? { child_hand_bag: 0, child_hold_bag: 0 } : {}),
   };
 
   if (params.flightType === "oneway") return base;
