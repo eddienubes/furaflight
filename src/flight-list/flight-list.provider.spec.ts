@@ -23,10 +23,10 @@ const searchParams: NormalizedSearchParams = {
 };
 
 /** Builds a FlightlistProvider wired to fake upstream/location dependencies. */
-function createProvider(
+const createProvider = (
   flights: FlightlistFlight[],
   airlineNames: ReadonlyMap<string, string>,
-): FlightlistProvider {
+): FlightlistProvider => {
   const client = {
     search: async (): Promise<FlightlistSearchResponse> => ({
       search_id: "search-id",
@@ -42,7 +42,7 @@ function createProvider(
   } as unknown as LocationResolver;
 
   return new FlightlistProvider(client, locationResolver);
-}
+};
 
 // Trimmed fixture based on a real flightlist.io response (oneway, one connection).
 const onewayFlight: FlightlistFlight = {
@@ -207,7 +207,11 @@ describe(FlightlistProvider.name, () => {
       const provider = createProvider([returnFlight], new Map());
       const [normalized] = await provider.search(searchParams);
 
-      expect(normalized?.duration).toEqual({ departure: 28800, return: 30000, total: 58800 });
+      expect(normalized?.duration).toEqual({
+        departure: 28800,
+        return: 30000,
+        total: 58800,
+      });
       // Outbound has a connection (2 legs -> 1 stop), return is nonstop (1 leg -> 0 stops).
       // stops must reflect the per-direction max, not the combined route length (which
       // would wrongly give 3 legs - 1 = 2).
@@ -216,7 +220,11 @@ describe(FlightlistProvider.name, () => {
 
     it("should compute stops per direction for a nonstop-both-ways round trip", async () => {
       const outboundLeg = { ...onewayFlight.route[0]!, id: "out_0", return: 0 };
-      const returnLeg = { ...onewayFlight.route[0]!, id: "return_0", return: 1 };
+      const returnLeg = {
+        ...onewayFlight.route[0]!,
+        id: "return_0",
+        return: 1,
+      };
       const nonstopRoundTrip: FlightlistFlight = {
         ...onewayFlight,
         duration: { departure: 5400, return: 5400, total: 10800 },
