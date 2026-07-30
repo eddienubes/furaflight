@@ -2,17 +2,16 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { FlightSearchProvider } from "./provider.ts";
 import { searchInputSchema } from "./schema.ts";
 
-export function createServer(provider: FlightSearchProvider): McpServer {
+export const createServer = (provider: FlightSearchProvider): McpServer => {
   const server = new McpServer({ name: "flightlist-mcp", version: "0.1.0" });
 
   server.registerTool(
     "search",
     {
       title: "Search flights",
-      description:
-        "Search flights via flightlist.io. Supports one-way, round-trip-by-dates, and " +
-        "round-trip-by-duration-of-stay searches. `from`/`to` accept IATA/ISO codes or " +
-        "free-text place names, comma-separated for multiple values.",
+      description: `Search flights via flightlist.io. Supports one-way, round-trip-by-dates, and \
+round-trip-by-duration-of-stay searches. \`from\`/\`to\` accept IATA/ISO codes or \
+free-text place names, comma-separated for multiple values.`,
       inputSchema: searchInputSchema,
     },
     async (args) => {
@@ -25,4 +24,4 @@ export function createServer(provider: FlightSearchProvider): McpServer {
   );
 
   return server;
-}
+};
