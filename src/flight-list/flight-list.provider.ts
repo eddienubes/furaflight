@@ -73,7 +73,6 @@ export class FlightlistProvider implements FlightSearchProvider {
     );
   }
 
-  /** Trims a full upstream flight result down to what's useful for LLM-driven trip browsing. */
   private normalizeFlight(
     flight: FlightlistFlight,
     currency: string,
