@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { normalizeFlight } from "../src/normalize.ts";
+import { FlightNormalizer } from "../src/normalize.ts";
 import type { FlightlistFlight } from "../src/types/flightlist.ts";
+
+const normalizer = new FlightNormalizer();
 
 // Trimmed fixture based on a real flightlist.io response (oneway, one connection).
 const onewayFlight: FlightlistFlight = {
@@ -107,10 +109,10 @@ const onewayFlight: FlightlistFlight = {
   virtual_interlining: false,
 };
 
-describe("normalizeFlight", () => {
+describe("FlightNormalizer.normalize", () => {
   test("trims a oneway upstream flight to the documented shape", () => {
     const airlineNames = new Map([["LH", "Lufthansa"]]);
-    const normalized = normalizeFlight(onewayFlight, "EUR", airlineNames);
+    const normalized = normalizer.normalize(onewayFlight, "EUR", airlineNames);
 
     expect(normalized).toEqual({
       price: 224,
@@ -142,7 +144,7 @@ describe("normalizeFlight", () => {
   });
 
   test("falls back to the raw airline code when no name is known", () => {
-    const normalized = normalizeFlight(onewayFlight, "EUR", new Map());
+    const normalized = normalizer.normalize(onewayFlight, "EUR", new Map());
     expect(normalized.airlines).toEqual(["LH"]);
     expect(normalized.legs[0]?.airline).toBe("LH");
   });
@@ -159,7 +161,7 @@ describe("normalizeFlight", () => {
       route: [...onewayFlight.route, returnLeg],
     };
 
-    const normalized = normalizeFlight(returnFlight, "EUR", new Map());
+    const normalized = normalizer.normalize(returnFlight, "EUR", new Map());
     expect(normalized.duration).toEqual({ departure: 28800, return: 30000, total: 58800 });
     // Outbound has a connection (2 legs -> 1 stop), return is nonstop (1 leg -> 0 stops).
     // stops must reflect the per-direction max, not the combined route length (which
@@ -176,7 +178,7 @@ describe("normalizeFlight", () => {
       route: [outboundLeg, returnLeg],
     };
 
-    const normalized = normalizeFlight(nonstopRoundTrip, "EUR", new Map());
+    const normalized = normalizer.normalize(nonstopRoundTrip, "EUR", new Map());
     // Both directions are nonstop (1 leg each), so this must be 0, not
     // route.length - 1 (which would wrongly give 2 legs - 1 = 1).
     expect(normalized.stops).toBe(0);
@@ -195,7 +197,7 @@ describe("normalizeFlight", () => {
       route: [outboundLeg, ...returnLegs],
     };
 
-    const normalized = normalizeFlight(asymmetricRoundTrip, "EUR", new Map());
+    const normalized = normalizer.normalize(asymmetricRoundTrip, "EUR", new Map());
     // Outbound is nonstop (1 leg -> 0 stops), return has a connection (2 legs -> 1 stop).
     expect(normalized.stops).toBe(1);
   });

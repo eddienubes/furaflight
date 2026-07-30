@@ -17,73 +17,6 @@ interface CacheFile<T> {
 
 const defaultCacheDir = (): string => appDirs({ appName: "flightlist-mcp" }).cache;
 
-function resolvedValueOf(entry: LocationEntry): string {
-  return entry.type === "region" ? entry.id : (entry.code ?? entry.id);
-}
-
-function candidateLabel(entry: LocationEntry): string {
-  return `${entry.name} (${resolvedValueOf(entry)})`;
-}
-
-function nameFields(entry: LocationEntry): string[] {
-  return [entry.name, entry.slug, entry.slug_en, ...(entry.alternative_names ?? [])].filter(
-    (value): value is string => value !== undefined,
-  );
-}
-
-function matchesExactName(entry: LocationEntry, normalizedToken: string): boolean {
-  return nameFields(entry).some((value) => value.toLowerCase() === normalizedToken);
-}
-
-function matchesFuzzy(entry: LocationEntry, normalizedToken: string): boolean {
-  return nameFields(entry).some((value) => value.toLowerCase().includes(normalizedToken));
-}
-
-function dedupeByValue(entries: LocationEntry[]): LocationEntry[] {
-  const seen = new Map<string, LocationEntry>();
-  for (const entry of entries) {
-    const value = resolvedValueOf(entry);
-    if (!seen.has(value)) seen.set(value, entry);
-  }
-  return [...seen.values()];
-}
-
-async function readCache<T>(file: string): Promise<CacheFile<T> | undefined> {
-  try {
-    const bunFile = Bun.file(file);
-    if (!(await bunFile.exists())) return undefined;
-    return (await bunFile.json()) as CacheFile<T>;
-  } catch {
-    return undefined;
-  }
-}
-
-async function loadDataset<T>(
-  cacheFile: string,
-  url: string,
-  parse: (text: string) => T[],
-): Promise<T[]> {
-  const cached = await readCache<T>(cacheFile);
-  if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
-    return cached.data;
-  }
-
-  try {
-    const response = await fetchWithTimeout(url, FETCH_TIMEOUT_MS);
-    if (!response.ok)
-      throw new FlightlistApiError(`Failed to fetch ${url}: HTTP ${response.status}.`);
-    const data = parse(await response.text());
-    await Bun.write(
-      cacheFile,
-      JSON.stringify({ fetchedAt: Date.now(), data } satisfies CacheFile<T>),
-    );
-    return data;
-  } catch {
-    if (cached) return cached.data;
-    throw new FlightlistApiError(`Failed to fetch ${url} and no cached copy is available.`);
-  }
-}
-
 /**
  * Resolves free-text place names or IATA/ISO codes to the codes flightlist.io's
  * search API expects, backed by the airport/city/country/region dataset and
@@ -99,24 +32,6 @@ export class LocationResolver {
     this.cacheDir = cacheDir;
   }
 
-  private async ensureLoaded(): Promise<void> {
-    if (this.locations && this.airlines) return;
-    const [locations, airlineEntries] = await Promise.all([
-      loadDataset<LocationEntry>(
-        join(this.cacheDir, "locations.json"),
-        LOCATIONS_URL,
-        extractJsonArray as (text: string) => LocationEntry[],
-      ),
-      loadDataset<AirlineEntry>(
-        join(this.cacheDir, "airlines.json"),
-        AIRLINES_URL,
-        extractJsonArray as (text: string) => AirlineEntry[],
-      ),
-    ]);
-    this.locations = locations;
-    this.airlines = new Map(airlineEntries.map((airline) => [airline.id, airline.name]));
-  }
-
   /** Resolves a (possibly comma-separated) `from`/`to` field into upstream-ready codes. */
   async resolve(field: string): Promise<string> {
     await this.ensureLoaded();
@@ -128,42 +43,135 @@ export class LocationResolver {
     return tokens.map((token) => this.resolveToken(token)).join(",");
   }
 
+  async airlineNames(): Promise<ReadonlyMap<string, string>> {
+    await this.ensureLoaded();
+    return this.airlines ?? new Map();
+  }
+
+  private async ensureLoaded(): Promise<void> {
+    if (this.locations && this.airlines) return;
+    const [locations, airlineEntries] = await Promise.all([
+      this.loadDataset<LocationEntry>(
+        join(this.cacheDir, "locations.json"),
+        LOCATIONS_URL,
+        extractJsonArray as (text: string) => LocationEntry[],
+      ),
+      this.loadDataset<AirlineEntry>(
+        join(this.cacheDir, "airlines.json"),
+        AIRLINES_URL,
+        extractJsonArray as (text: string) => AirlineEntry[],
+      ),
+    ]);
+    this.locations = locations;
+    this.airlines = new Map(airlineEntries.map((airline) => [airline.id, airline.name]));
+  }
+
+  /**
+   * Loads a dataset from its on-disk cache if fresh, otherwise re-fetches it from
+   * `url`, parses it with `parse`, and rewrites the cache; falls back to a stale
+   * cache if the fetch fails and no cache exists is a hard failure.
+   */
+  private async loadDataset<T>(
+    cacheFile: string,
+    url: string,
+    parse: (text: string) => T[],
+  ): Promise<T[]> {
+    const cached = await this.readCache<T>(cacheFile);
+    if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
+      return cached.data;
+    }
+
+    try {
+      const response = await fetchWithTimeout(url, FETCH_TIMEOUT_MS);
+      if (!response.ok)
+        throw new FlightlistApiError(`Failed to fetch ${url}: HTTP ${response.status}.`);
+      const data = parse(await response.text());
+      await Bun.write(
+        cacheFile,
+        JSON.stringify({ fetchedAt: Date.now(), data } satisfies CacheFile<T>),
+      );
+      return data;
+    } catch {
+      if (cached) return cached.data;
+      throw new FlightlistApiError(`Failed to fetch ${url} and no cached copy is available.`);
+    }
+  }
+
+  private async readCache<T>(file: string): Promise<CacheFile<T> | undefined> {
+    try {
+      const bunFile = Bun.file(file);
+      if (!(await bunFile.exists())) return undefined;
+      return (await bunFile.json()) as CacheFile<T>;
+    } catch {
+      return undefined;
+    }
+  }
+
+  /**
+   * Resolves a single token by trying, in order: exact code match, exact name
+   * match, then a fuzzy substring match against name/slug/alternative-name
+   * fields — each tier deduped by resolved value and only accepted if it
+   * narrows to exactly one candidate.
+   */
   private resolveToken(token: string): string {
     const entries = this.locations ?? [];
     const normalized = token.toLowerCase();
 
-    const exactCode = dedupeByValue(
-      entries.filter((e) => e.active !== false && e.code?.toLowerCase() === normalized),
+    const exactCode = this.matchAndDedupe(
+      entries,
+      (entry) => entry.active !== false && entry.code?.toLowerCase() === normalized,
     );
-    if (exactCode.length === 1) return resolvedValueOf(exactCode[0]!);
-    if (exactCode.length > 1) {
-      throw new LocationResolutionError(
-        token,
-        exactCode.slice(0, MAX_CANDIDATES).map(candidateLabel),
-      );
-    }
+    if (exactCode.length === 1) return this.resolvedValueOf(exactCode[0]!);
+    if (exactCode.length > 1) throw this.ambiguous(token, exactCode);
 
-    const exactName = dedupeByValue(
-      entries.filter((e) => e.active !== false && matchesExactName(e, normalized)),
-    );
-    if (exactName.length === 1) return resolvedValueOf(exactName[0]!);
-    if (exactName.length > 1) {
-      throw new LocationResolutionError(
-        token,
-        exactName.slice(0, MAX_CANDIDATES).map(candidateLabel),
+    const nameMatches = (entry: LocationEntry): string[] =>
+      [entry.name, entry.slug, entry.slug_en, ...(entry.alternative_names ?? [])].filter(
+        (value): value is string => value !== undefined,
       );
-    }
 
-    const fuzzy = dedupeByValue(
-      entries.filter((e) => e.active !== false && matchesFuzzy(e, normalized)),
+    const exactName = this.matchAndDedupe(
+      entries,
+      (entry) =>
+        entry.active !== false &&
+        nameMatches(entry).some((value) => value.toLowerCase() === normalized),
     );
-    if (fuzzy.length === 1) return resolvedValueOf(fuzzy[0]!);
+    if (exactName.length === 1) return this.resolvedValueOf(exactName[0]!);
+    if (exactName.length > 1) throw this.ambiguous(token, exactName);
+
+    const fuzzy = this.matchAndDedupe(
+      entries,
+      (entry) =>
+        entry.active !== false &&
+        nameMatches(entry).some((value) => value.toLowerCase().includes(normalized)),
+    );
+    if (fuzzy.length === 1) return this.resolvedValueOf(fuzzy[0]!);
     if (fuzzy.length === 0) throw new LocationResolutionError(token, []);
-    throw new LocationResolutionError(token, fuzzy.slice(0, MAX_CANDIDATES).map(candidateLabel));
+    throw this.ambiguous(token, fuzzy);
   }
 
-  async airlineNames(): Promise<ReadonlyMap<string, string>> {
-    await this.ensureLoaded();
-    return this.airlines ?? new Map();
+  /** Filters entries by `predicate`, then dedupes by resolved value (first occurrence wins). */
+  private matchAndDedupe(
+    entries: LocationEntry[],
+    predicate: (entry: LocationEntry) => boolean,
+  ): LocationEntry[] {
+    const seen = new Map<string, LocationEntry>();
+    for (const entry of entries) {
+      if (!predicate(entry)) continue;
+      const value = this.resolvedValueOf(entry);
+      if (!seen.has(value)) seen.set(value, entry);
+    }
+    return [...seen.values()];
+  }
+
+  /** The value flightlist.io's search API expects for this entry (its code, or id for regions). */
+  private resolvedValueOf(entry: LocationEntry): string {
+    return entry.type === "region" ? entry.id : (entry.code ?? entry.id);
+  }
+
+  private ambiguous(token: string, candidates: LocationEntry[]): LocationResolutionError {
+    const labels = candidates
+      .slice(0, MAX_CANDIDATES)
+      .map((entry) => `${entry.name} (${this.resolvedValueOf(entry)})`);
+    return new LocationResolutionError(token, labels);
   }
 }
