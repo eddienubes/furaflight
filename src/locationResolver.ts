@@ -1,5 +1,5 @@
-import { homedir } from "node:os";
 import { join } from "node:path";
+import appDirs from "appdirsjs";
 import { FlightlistApiError, LocationResolutionError } from "./errors.ts";
 import type { AirlineEntry, LocationEntry } from "./types/location.ts";
 import { extractJsonArray, fetchWithTimeout } from "./utils.ts";
@@ -15,18 +15,7 @@ interface CacheFile<T> {
   data: T[];
 }
 
-function defaultCacheDir(): string {
-  const home = homedir();
-  if (process.platform === "darwin") return join(home, "Library", "Caches", "flightlist-mcp");
-  if (process.platform === "win32") {
-    return join(
-      process.env.LOCALAPPDATA ?? join(home, "AppData", "Local"),
-      "flightlist-mcp",
-      "Cache",
-    );
-  }
-  return join(process.env.XDG_CACHE_HOME ?? join(home, ".cache"), "flightlist-mcp");
-}
+const defaultCacheDir = (): string => appDirs({ appName: "flightlist-mcp" }).cache;
 
 function resolvedValueOf(entry: LocationEntry): string {
   return entry.type === "region" ? entry.id : (entry.code ?? entry.id);
