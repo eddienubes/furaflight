@@ -15,6 +15,16 @@
         "oxlint": "^1.76.0",
         "typescript": "^7.0.2",
       },
+      "optionalDependencies": {
+        "@furaflight/mcp-darwin-arm64": "0.0.1",
+        "@furaflight/mcp-darwin-x64": "0.0.1",
+        "@furaflight/mcp-linux-arm64": "0.0.1",
+        "@furaflight/mcp-linux-arm64-musl": "0.0.1",
+        "@furaflight/mcp-linux-x64": "0.0.1",
+        "@furaflight/mcp-linux-x64-musl": "0.0.1",
+        "@furaflight/mcp-win32-arm64": "0.0.1",
+        "@furaflight/mcp-win32-x64": "0.0.1",
+      },
     },
   },
   "packages": {

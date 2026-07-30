@@ -12,19 +12,25 @@
     "url": "git+https://github.com/eddienubes/furaflight.git"
   },
   "bin": {
-    "furaflight": "dist/furaflight"
+    "furaflight": "bin/furaflight.exe"
   },
   "files": [
-    "dist/**/*"
+    "install.cjs",
+    "README.md",
+    "LICENSE"
   ],
+  "type": "module",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org",
     "tag": "latest"
   },
-  "type": "module",
   "scripts": {
     "build": "bun build --compile --bytecode --minify --format esm --sourcemap --outfile dist/furaflight ./src/main.ts",
+    "build:platforms": "bun run scripts/build-platforms.ts",
+    "generate:platforms": "bun run scripts/generate-platform-packages.ts",
+    "publish:platforms": "bun run scripts/publish-platforms.ts",
+    "postinstall": "node install.cjs",
     "start": "bun run src/main.ts",
     "test": "bun test",
     "lint": "oxlint",
@@ -41,5 +47,15 @@
     "oxfmt": "^0.61.0",
     "oxlint": "^1.76.0",
     "typescript": "^7.0.2"
+  },
+  "optionalDependencies": {
+    "@furaflight/mcp-darwin-arm64": "0.0.1",
+    "@furaflight/mcp-darwin-x64": "0.0.1",
+    "@furaflight/mcp-linux-arm64": "0.0.1",
+    "@furaflight/mcp-linux-arm64-musl": "0.0.1",
+    "@furaflight/mcp-linux-x64": "0.0.1",
+    "@furaflight/mcp-linux-x64-musl": "0.0.1",
+    "@furaflight/mcp-win32-arm64": "0.0.1",
+    "@furaflight/mcp-win32-x64": "0.0.1"
   }
 }
