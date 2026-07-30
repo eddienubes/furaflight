@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import type { FlightlistFlight } from "./flight-list.api-client.ts";
 import { FlightNormalizer } from "./flight.normalizer.ts";
 
@@ -110,7 +110,7 @@ const onewayFlight: FlightlistFlight = {
 };
 
 describe("FlightNormalizer.normalize", () => {
-  test("trims a oneway upstream flight to the documented shape", () => {
+  it("should trim a oneway upstream flight to the documented shape", () => {
     const airlineNames = new Map([["LH", "Lufthansa"]]);
     const normalized = normalizer.normalize(onewayFlight, "EUR", airlineNames);
 
@@ -143,13 +143,13 @@ describe("FlightNormalizer.normalize", () => {
     });
   });
 
-  test("falls back to the raw airline code when no name is known", () => {
+  it("should fall back to the raw airline code when no name is known", () => {
     const normalized = normalizer.normalize(onewayFlight, "EUR", new Map());
     expect(normalized.airlines).toEqual(["LH"]);
     expect(normalized.legs[0]?.airline).toBe("LH");
   });
 
-  test("includes duration.return only for round trips", () => {
+  it("should include duration.return only for round trips", () => {
     const returnLeg = {
       ...onewayFlight.route[0]!,
       id: "return_0",
@@ -169,7 +169,7 @@ describe("FlightNormalizer.normalize", () => {
     expect(normalized.stops).toBe(1);
   });
 
-  test("computes stops per direction for a nonstop-both-ways round trip", () => {
+  it("should compute stops per direction for a nonstop-both-ways round trip", () => {
     const outboundLeg = { ...onewayFlight.route[0]!, id: "out_0", return: 0 };
     const returnLeg = { ...onewayFlight.route[0]!, id: "return_0", return: 1 };
     const nonstopRoundTrip: FlightlistFlight = {
@@ -184,7 +184,7 @@ describe("FlightNormalizer.normalize", () => {
     expect(normalized.stops).toBe(0);
   });
 
-  test("computes stops per direction when the return leg has the connection", () => {
+  it("should compute stops per direction when the return leg has the connection", () => {
     const outboundLeg = { ...onewayFlight.route[0]!, id: "out_0", return: 0 };
     const returnLegs = onewayFlight.route.map((leg, index) => ({
       ...leg,

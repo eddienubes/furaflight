@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { searchInputSchema } from "./search.schema.ts";
 
 const futureDate = (daysFromNow: number): string => {
@@ -8,7 +8,7 @@ const futureDate = (daysFromNow: number): string => {
 };
 
 describe("searchInputSchema — valid shapes", () => {
-  test("accepts a minimal oneway search and applies defaults", () => {
+  it("should accept a minimal oneway search and apply defaults", () => {
     const result = searchInputSchema.safeParse({
       flightType: "oneway",
       from: "CDG",
@@ -27,7 +27,7 @@ describe("searchInputSchema — valid shapes", () => {
     expect(result.data.sort).toBe("price");
   });
 
-  test("accepts oneway with a departDateTo range", () => {
+  it("should accept oneway with a departDateTo range", () => {
     const result = searchInputSchema.safeParse({
       flightType: "oneway",
       from: "CDG",
@@ -38,7 +38,7 @@ describe("searchInputSchema — valid shapes", () => {
     expect(result.success).toBe(true);
   });
 
-  test("accepts return with returnMode 'dates'", () => {
+  it("should accept return with returnMode 'dates'", () => {
     const result = searchInputSchema.safeParse({
       flightType: "return",
       returnMode: "dates",
@@ -50,7 +50,7 @@ describe("searchInputSchema — valid shapes", () => {
     expect(result.success).toBe(true);
   });
 
-  test("accepts return with returnMode 'nights'", () => {
+  it("should accept return with returnMode 'nights'", () => {
     const result = searchInputSchema.safeParse({
       flightType: "return",
       returnMode: "nights",
@@ -63,7 +63,7 @@ describe("searchInputSchema — valid shapes", () => {
     expect(result.success).toBe(true);
   });
 
-  test("accepts comma-separated from/to", () => {
+  it("should accept comma-separated from/to", () => {
     const result = searchInputSchema.safeParse({
       flightType: "oneway",
       from: "CDG,ORY",
@@ -75,7 +75,7 @@ describe("searchInputSchema — valid shapes", () => {
 });
 
 describe("searchInputSchema — rejects invalid shapes", () => {
-  test("rejects returnMode 'dates' mixed with minNights", () => {
+  it("should reject returnMode 'dates' mixed with minNights", () => {
     const result = searchInputSchema.safeParse({
       flightType: "return",
       returnMode: "dates",
@@ -88,7 +88,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
     expect(result.success).toBe(false);
   });
 
-  test("rejects returnMode 'nights' mixed with returnDateFrom", () => {
+  it("should reject returnMode 'nights' mixed with returnDateFrom", () => {
     const result = searchInputSchema.safeParse({
       flightType: "return",
       returnMode: "nights",
@@ -102,7 +102,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
     expect(result.success).toBe(false);
   });
 
-  test("rejects returnMode 'dates' missing returnDateFrom", () => {
+  it("should reject returnMode 'dates' missing returnDateFrom", () => {
     const result = searchInputSchema.safeParse({
       flightType: "return",
       returnMode: "dates",
@@ -113,7 +113,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
     expect(result.success).toBe(false);
   });
 
-  test("rejects returnMode 'nights' missing maxNights", () => {
+  it("should reject returnMode 'nights' missing maxNights", () => {
     const result = searchInputSchema.safeParse({
       flightType: "return",
       returnMode: "nights",
@@ -125,7 +125,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
     expect(result.success).toBe(false);
   });
 
-  test("rejects minNights greater than maxNights", () => {
+  it("should reject minNights greater than maxNights", () => {
     const result = searchInputSchema.safeParse({
       flightType: "return",
       returnMode: "nights",
@@ -138,7 +138,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
     expect(result.success).toBe(false);
   });
 
-  test("rejects a departDateFrom in the past", () => {
+  it("should reject a departDateFrom in the past", () => {
     const result = searchInputSchema.safeParse({
       flightType: "oneway",
       from: "CDG",
@@ -148,7 +148,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
     expect(result.success).toBe(false);
   });
 
-  test("rejects departDateTo before departDateFrom", () => {
+  it("should reject departDateTo before departDateFrom", () => {
     const result = searchInputSchema.safeParse({
       flightType: "oneway",
       from: "CDG",
@@ -159,7 +159,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
     expect(result.success).toBe(false);
   });
 
-  test("rejects returnDateTo before returnDateFrom", () => {
+  it("should reject returnDateTo before returnDateFrom", () => {
     const result = searchInputSchema.safeParse({
       flightType: "return",
       returnMode: "dates",
@@ -172,7 +172,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
     expect(result.success).toBe(false);
   });
 
-  test("rejects an invalid date format", () => {
+  it("should reject an invalid date format", () => {
     const result = searchInputSchema.safeParse({
       flightType: "oneway",
       from: "CDG",
@@ -182,7 +182,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
     expect(result.success).toBe(false);
   });
 
-  test("rejects an invalid calendar date", () => {
+  it("should reject an invalid calendar date", () => {
     const result = searchInputSchema.safeParse({
       flightType: "oneway",
       from: "CDG",
@@ -192,7 +192,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
     expect(result.success).toBe(false);
   });
 
-  test("rejects a limit above the hard cap of 50", () => {
+  it("should reject a limit above the hard cap of 50", () => {
     const result = searchInputSchema.safeParse({
       flightType: "oneway",
       from: "CDG",
@@ -203,7 +203,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
     expect(result.success).toBe(false);
   });
 
-  test("rejects an invalid cabinClass", () => {
+  it("should reject an invalid cabinClass", () => {
     const result = searchInputSchema.safeParse({
       flightType: "oneway",
       from: "CDG",
@@ -214,7 +214,7 @@ describe("searchInputSchema — rejects invalid shapes", () => {
     expect(result.success).toBe(false);
   });
 
-  test("rejects a missing flightType", () => {
+  it("should reject a missing flightType", () => {
     const result = searchInputSchema.safeParse({
       from: "CDG",
       to: "SOF",
