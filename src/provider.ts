@@ -2,6 +2,7 @@ import type { FlightlistApiClient } from "./flightlistApiClient.ts";
 import type { LocationResolver } from "./locationResolver.ts";
 import { normalizeFlight, type NormalizedFlight } from "./normalize.ts";
 import type { FlightlistSearchRequestParams } from "./types/flightlist.ts";
+import { toUpstreamDate } from "./utils.ts";
 
 export interface NormalizedSearchParams {
   from: string;
@@ -26,12 +27,6 @@ export interface NormalizedSearchParams {
 
 export interface FlightSearchProvider {
   search(params: NormalizedSearchParams): Promise<NormalizedFlight[]>;
-}
-
-/** Converts a `YYYY-MM-DD` date into the `DD/MM/YYYY` format flightlist.io expects. */
-function toUpstreamDate(isoDate: string): string {
-  const [year, month, day] = isoDate.split("-");
-  return `${day}/${month}/${year}`;
 }
 
 function buildRequestParams(

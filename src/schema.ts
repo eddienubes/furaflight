@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { todayIsoDate } from "./utils.ts";
 
 function isValidIsoDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
@@ -7,10 +8,6 @@ function isValidIsoDate(value: string): boolean {
   return (
     date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
   );
-}
-
-function todayIsoDate(): string {
-  return new Date().toISOString().slice(0, 10);
 }
 
 const dateStringSchema = z

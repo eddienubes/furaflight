@@ -1,5 +1,5 @@
 import { FlightlistApiError } from "./errors.ts";
-import { fetchWithTimeout } from "./fetchWithTimeout.ts";
+import { fetchWithTimeout } from "./utils.ts";
 import type {
   FlightlistSearchRequestParams,
   FlightlistSearchResponse,

@@ -1,8 +1,8 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { FlightlistApiError, LocationResolutionError } from "./errors.ts";
-import { fetchWithTimeout } from "./fetchWithTimeout.ts";
 import type { AirlineEntry, LocationEntry } from "./types/location.ts";
+import { extractJsonArray, fetchWithTimeout } from "./utils.ts";
 
 const LOCATIONS_URL = "https://www.flightlist.io/data/v2/locations.js";
 const AIRLINES_URL = "https://www.flightlist.io/data/v2/airlines.js";
@@ -26,15 +26,6 @@ function defaultCacheDir(): string {
     );
   }
   return join(process.env.XDG_CACHE_HOME ?? join(home, ".cache"), "flightlist-mcp");
-}
-
-function extractJsonArray(text: string): unknown[] {
-  const start = text.indexOf("[");
-  const end = text.lastIndexOf("]");
-  if (start === -1 || end === -1 || end < start) {
-    throw new FlightlistApiError("Unexpected dataset format from flightlist.io.");
-  }
-  return JSON.parse(text.slice(start, end + 1));
 }
 
 function resolvedValueOf(entry: LocationEntry): string {
