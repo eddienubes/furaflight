@@ -19,7 +19,11 @@ function defaultCacheDir(): string {
   const home = homedir();
   if (process.platform === "darwin") return join(home, "Library", "Caches", "flightlist-mcp");
   if (process.platform === "win32") {
-    return join(process.env.LOCALAPPDATA ?? join(home, "AppData", "Local"), "flightlist-mcp", "Cache");
+    return join(
+      process.env.LOCALAPPDATA ?? join(home, "AppData", "Local"),
+      "flightlist-mcp",
+      "Cache",
+    );
   }
   return join(process.env.XDG_CACHE_HOME ?? join(home, ".cache"), "flightlist-mcp");
 }
@@ -45,7 +49,9 @@ function matchesFuzzy(entry: LocationEntry, normalizedToken: string): boolean {
   if (entry.name.toLowerCase().includes(normalizedToken)) return true;
   if (entry.slug?.toLowerCase().includes(normalizedToken)) return true;
   if (entry.slug_en?.toLowerCase().includes(normalizedToken)) return true;
-  return entry.alternative_names?.some((alt) => alt.toLowerCase().includes(normalizedToken)) ?? false;
+  return (
+    entry.alternative_names?.some((alt) => alt.toLowerCase().includes(normalizedToken)) ?? false
+  );
 }
 
 function dedupeByValue(entries: LocationEntry[]): LocationEntry[] {
@@ -67,7 +73,11 @@ async function readCache<T>(file: string): Promise<CacheFile<T> | undefined> {
   }
 }
 
-async function loadDataset<T>(cacheFile: string, url: string, parse: (text: string) => T[]): Promise<T[]> {
+async function loadDataset<T>(
+  cacheFile: string,
+  url: string,
+  parse: (text: string) => T[],
+): Promise<T[]> {
   const cached = await readCache<T>(cacheFile);
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
     return cached.data;
@@ -75,9 +85,13 @@ async function loadDataset<T>(cacheFile: string, url: string, parse: (text: stri
 
   try {
     const response = await fetchWithTimeout(url, FETCH_TIMEOUT_MS);
-    if (!response.ok) throw new FlightlistApiError(`Failed to fetch ${url}: HTTP ${response.status}.`);
+    if (!response.ok)
+      throw new FlightlistApiError(`Failed to fetch ${url}: HTTP ${response.status}.`);
     const data = parse(await response.text());
-    await Bun.write(cacheFile, JSON.stringify({ fetchedAt: Date.now(), data } satisfies CacheFile<T>));
+    await Bun.write(
+      cacheFile,
+      JSON.stringify({ fetchedAt: Date.now(), data } satisfies CacheFile<T>),
+    );
     return data;
   } catch {
     if (cached) return cached.data;
@@ -99,8 +113,16 @@ export class LocationResolver {
   private async ensureLoaded(): Promise<void> {
     if (this.locations && this.airlines) return;
     const [locations, airlineEntries] = await Promise.all([
-      loadDataset<LocationEntry>(join(this.cacheDir, "locations.json"), LOCATIONS_URL, extractJsonArray as (text: string) => LocationEntry[]),
-      loadDataset<AirlineEntry>(join(this.cacheDir, "airlines.json"), AIRLINES_URL, extractJsonArray as (text: string) => AirlineEntry[]),
+      loadDataset<LocationEntry>(
+        join(this.cacheDir, "locations.json"),
+        LOCATIONS_URL,
+        extractJsonArray as (text: string) => LocationEntry[],
+      ),
+      loadDataset<AirlineEntry>(
+        join(this.cacheDir, "airlines.json"),
+        AIRLINES_URL,
+        extractJsonArray as (text: string) => AirlineEntry[],
+      ),
     ]);
     this.locations = locations;
     this.airlines = new Map(airlineEntries.map((airline) => [airline.id, airline.name]));
@@ -121,11 +143,16 @@ export class LocationResolver {
     const entries = this.locations ?? [];
     const normalized = token.toLowerCase();
 
-    const exact = dedupeByValue(entries.filter((e) => e.active !== false && e.code?.toLowerCase() === normalized));
+    const exact = dedupeByValue(
+      entries.filter((e) => e.active !== false && e.code?.toLowerCase() === normalized),
+    );
     if (exact.length === 1) return resolvedValueOf(exact[0]!);
-    if (exact.length > 1) throw new LocationResolutionError(token, exact.slice(0, MAX_CANDIDATES).map(candidateLabel));
+    if (exact.length > 1)
+      throw new LocationResolutionError(token, exact.slice(0, MAX_CANDIDATES).map(candidateLabel));
 
-    const fuzzy = dedupeByValue(entries.filter((e) => e.active !== false && matchesFuzzy(e, normalized)));
+    const fuzzy = dedupeByValue(
+      entries.filter((e) => e.active !== false && matchesFuzzy(e, normalized)),
+    );
     if (fuzzy.length === 1) return resolvedValueOf(fuzzy[0]!);
     if (fuzzy.length === 0) throw new LocationResolutionError(token, []);
     throw new LocationResolutionError(token, fuzzy.slice(0, MAX_CANDIDATES).map(candidateLabel));

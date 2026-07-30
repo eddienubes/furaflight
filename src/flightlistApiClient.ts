@@ -1,6 +1,9 @@
 import { FlightlistApiError } from "./errors.ts";
 import { fetchWithTimeout } from "./fetchWithTimeout.ts";
-import type { FlightlistSearchRequestParams, FlightlistSearchResponse } from "./types/flightlist.ts";
+import type {
+  FlightlistSearchRequestParams,
+  FlightlistSearchResponse,
+} from "./types/flightlist.ts";
 
 const SEARCH_URL = "https://www.flightlist.io/api/search.php";
 const DEFAULT_TIMEOUT_MS = 15_000;

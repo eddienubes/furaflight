@@ -4,7 +4,9 @@ function isValidIsoDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const [year, month, day] = value.split("-").map(Number) as [number, number, number];
   const date = new Date(Date.UTC(year, month - 1, day));
-  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  );
 }
 
 function todayIsoDate(): string {
@@ -36,8 +38,19 @@ const commonShape = {
     .default("M")
     .describe("Cabin class: M=economy, W=premium economy, C=business, F=first."),
   currency: z.string().min(1).default("USD").describe("Currency code for prices, e.g. USD, EUR."),
-  maxStops: z.number().int().min(0).optional().describe("Maximum stops per leg; 0 means nonstop only."),
-  limit: z.number().int().min(1).max(50).default(20).describe("Max number of results to return (hard cap 50)."),
+  maxStops: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .describe("Maximum stops per leg; 0 means nonstop only."),
+  limit: z
+    .number()
+    .int()
+    .min(1)
+    .max(50)
+    .default(20)
+    .describe("Max number of results to return (hard cap 50)."),
   sort: z.enum(["price"]).default("price").describe("Sort order for results."),
 };
 
@@ -46,7 +59,9 @@ const onewaySchema = z.object({
   departDateFrom: dateStringSchema.describe("Earliest departure date (YYYY-MM-DD)."),
   departDateTo: dateStringSchema
     .optional()
-    .describe("Latest departure date (YYYY-MM-DD); a range beyond a single day triggers a flexible search."),
+    .describe(
+      "Latest departure date (YYYY-MM-DD); a range beyond a single day triggers a flexible search.",
+    ),
   ...commonShape,
 });
 
@@ -58,13 +73,25 @@ const returnSchema = z.object({
   departDateFrom: dateStringSchema.describe("Earliest departure date (YYYY-MM-DD)."),
   departDateTo: dateStringSchema
     .optional()
-    .describe("Latest departure date (YYYY-MM-DD); a range beyond a single day triggers a flexible search."),
+    .describe(
+      "Latest departure date (YYYY-MM-DD); a range beyond a single day triggers a flexible search.",
+    ),
   returnDateFrom: dateStringSchema
     .optional()
     .describe("Earliest return date (YYYY-MM-DD). Required when returnMode is 'dates'."),
   returnDateTo: dateStringSchema.optional().describe("Latest return date (YYYY-MM-DD)."),
-  minNights: z.number().int().min(0).optional().describe("Minimum nights at destination. Required when returnMode is 'nights'."),
-  maxNights: z.number().int().min(0).optional().describe("Maximum nights at destination. Required when returnMode is 'nights'."),
+  minNights: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .describe("Minimum nights at destination. Required when returnMode is 'nights'."),
+  maxNights: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .describe("Maximum nights at destination. Required when returnMode is 'nights'."),
   ...commonShape,
 });
 
@@ -72,7 +99,11 @@ export const searchInputSchema = z
   .discriminatedUnion("flightType", [onewaySchema, returnSchema])
   .superRefine((data, ctx) => {
     if (data.departDateFrom < todayIsoDate()) {
-      ctx.addIssue({ code: "custom", message: "departDateFrom cannot be in the past.", path: ["departDateFrom"] });
+      ctx.addIssue({
+        code: "custom",
+        message: "departDateFrom cannot be in the past.",
+        path: ["departDateFrom"],
+      });
     }
     if (data.departDateTo !== undefined && data.departDateTo < data.departDateFrom) {
       ctx.addIssue({
@@ -125,8 +156,16 @@ export const searchInputSchema = z
           path: ["returnDateFrom"],
         });
       }
-      if (data.minNights !== undefined && data.maxNights !== undefined && data.minNights > data.maxNights) {
-        ctx.addIssue({ code: "custom", message: "minNights cannot be greater than maxNights.", path: ["maxNights"] });
+      if (
+        data.minNights !== undefined &&
+        data.maxNights !== undefined &&
+        data.minNights > data.maxNights
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          message: "minNights cannot be greater than maxNights.",
+          path: ["maxNights"],
+        });
       }
     }
   });

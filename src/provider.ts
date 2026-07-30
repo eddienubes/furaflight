@@ -79,7 +79,9 @@ function buildRequestParams(
   return {
     ...base,
     return_from: toUpstreamDate(params.returnDateFrom ?? params.departDateFrom),
-    return_to: toUpstreamDate(params.returnDateTo ?? params.returnDateFrom ?? params.departDateFrom),
+    return_to: toUpstreamDate(
+      params.returnDateTo ?? params.returnDateFrom ?? params.departDateFrom,
+    ),
   };
 }
 
