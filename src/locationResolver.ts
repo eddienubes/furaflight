@@ -45,13 +45,18 @@ function candidateLabel(entry: LocationEntry): string {
   return `${entry.name} (${resolvedValueOf(entry)})`;
 }
 
-function matchesFuzzy(entry: LocationEntry, normalizedToken: string): boolean {
-  if (entry.name.toLowerCase().includes(normalizedToken)) return true;
-  if (entry.slug?.toLowerCase().includes(normalizedToken)) return true;
-  if (entry.slug_en?.toLowerCase().includes(normalizedToken)) return true;
-  return (
-    entry.alternative_names?.some((alt) => alt.toLowerCase().includes(normalizedToken)) ?? false
+function nameFields(entry: LocationEntry): string[] {
+  return [entry.name, entry.slug, entry.slug_en, ...(entry.alternative_names ?? [])].filter(
+    (value): value is string => value !== undefined,
   );
+}
+
+function matchesExactName(entry: LocationEntry, normalizedToken: string): boolean {
+  return nameFields(entry).some((value) => value.toLowerCase() === normalizedToken);
+}
+
+function matchesFuzzy(entry: LocationEntry, normalizedToken: string): boolean {
+  return nameFields(entry).some((value) => value.toLowerCase().includes(normalizedToken));
 }
 
 function dedupeByValue(entries: LocationEntry[]): LocationEntry[] {
@@ -143,12 +148,27 @@ export class LocationResolver {
     const entries = this.locations ?? [];
     const normalized = token.toLowerCase();
 
-    const exact = dedupeByValue(
+    const exactCode = dedupeByValue(
       entries.filter((e) => e.active !== false && e.code?.toLowerCase() === normalized),
     );
-    if (exact.length === 1) return resolvedValueOf(exact[0]!);
-    if (exact.length > 1)
-      throw new LocationResolutionError(token, exact.slice(0, MAX_CANDIDATES).map(candidateLabel));
+    if (exactCode.length === 1) return resolvedValueOf(exactCode[0]!);
+    if (exactCode.length > 1) {
+      throw new LocationResolutionError(
+        token,
+        exactCode.slice(0, MAX_CANDIDATES).map(candidateLabel),
+      );
+    }
+
+    const exactName = dedupeByValue(
+      entries.filter((e) => e.active !== false && matchesExactName(e, normalized)),
+    );
+    if (exactName.length === 1) return resolvedValueOf(exactName[0]!);
+    if (exactName.length > 1) {
+      throw new LocationResolutionError(
+        token,
+        exactName.slice(0, MAX_CANDIDATES).map(candidateLabel),
+      );
+    }
 
     const fuzzy = dedupeByValue(
       entries.filter((e) => e.active !== false && matchesFuzzy(e, normalized)),
