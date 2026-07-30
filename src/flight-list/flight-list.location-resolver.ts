@@ -7,6 +7,8 @@ import {
 } from "./flight-list.errors.ts";
 import { extractJsonArray } from "./flight-list.utils.ts";
 
+const useAppDirs = (appDirs as any).default as typeof appDirs
+
 /**
  * Minimal typing for flightlist.io's static `locations.js` / `airlines.js`
  * datasets — only the fields LocationResolver actually reads. Airports,
@@ -41,7 +43,7 @@ interface CacheFile<T> {
   data: T[];
 }
 
-const defaultCacheDir = (): string => appDirs({ appName: "flightlist-mcp" }).cache;
+const defaultCacheDir = (): string => useAppDirs({ appName: "flightlist-mcp" }).cache;
 
 /**
  * Resolves free-text place names or IATA/ISO codes to the codes flightlist.io's
