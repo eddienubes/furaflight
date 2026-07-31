@@ -1,6 +1,6 @@
 {
   "name": "@furaflight/mcp",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "MCP server exposing a flight search tool backed by flightlist.io",
   "homepage": "https://github.com/eddienubes/furaflight#readme",
   "bugs": {
@@ -49,13 +49,13 @@
     "typescript": "^7.0.2"
   },
   "optionalDependencies": {
-    "@furaflight/mcp-darwin-arm64": "0.0.6",
-    "@furaflight/mcp-darwin-x64": "0.0.6",
-    "@furaflight/mcp-linux-arm64": "0.0.6",
-    "@furaflight/mcp-linux-arm64-musl": "0.0.6",
-    "@furaflight/mcp-linux-x64": "0.0.6",
-    "@furaflight/mcp-linux-x64-musl": "0.0.6",
-    "@furaflight/mcp-win32-arm64": "0.0.6",
-    "@furaflight/mcp-win32-x64": "0.0.6"
+    "@furaflight/mcp-darwin-arm64": "0.0.7",
+    "@furaflight/mcp-darwin-x64": "0.0.7",
+    "@furaflight/mcp-linux-arm64": "0.0.7",
+    "@furaflight/mcp-linux-arm64-musl": "0.0.7",
+    "@furaflight/mcp-linux-x64": "0.0.7",
+    "@furaflight/mcp-linux-x64-musl": "0.0.7",
+    "@furaflight/mcp-win32-arm64": "0.0.7",
+    "@furaflight/mcp-win32-x64": "0.0.7"
   }
 }

@@ -16,20 +16,9 @@ import {
   REPO_ROOT,
 } from "./constants.ts";
 
-const publish = async (
-  cwd: string,
-  label: string,
-  dryRun: boolean,
-): Promise<void> => {
-  const args = [
-    "publish",
-    "--access",
-    "public",
-    ...(dryRun ? ["--dry-run"] : []),
-  ];
-  console.log(
-    `\n[publish-platforms] publishing ${label}${dryRun ? " (dry run)" : ""}...`,
-  );
+const publish = async (cwd: string, label: string, dryRun: boolean): Promise<void> => {
+  const args = ["publish", "--access", "public", ...(dryRun ? ["--dry-run"] : [])];
+  console.log(`\n[publish-platforms] publishing ${label}${dryRun ? " (dry run)" : ""}...`);
   // Use npm, not bun, to publish: bun publish doesn't yet support npm's OIDC
   // trusted-publishing flow (https://github.com/oven-sh/bun/issues/22423).
   const proc = Bun.spawn(["npm", ...args], {
@@ -49,11 +38,7 @@ const main = async (): Promise<void> => {
 
   await Promise.all(
     PLATFORM_TARGETS.map(async (target) => {
-      await publish(
-        path.join(PLATFORMS_DIR, target.packageSuffix),
-        target.packageName,
-        dryRun,
-      );
+      await publish(path.join(PLATFORMS_DIR, target.packageSuffix), target.packageName, dryRun);
     }),
   );
 
