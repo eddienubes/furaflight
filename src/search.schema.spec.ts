@@ -214,6 +214,17 @@ describe("searchInputSchema — rejects invalid shapes", () => {
     expect(result.success).toBe(false);
   });
 
+  it("should reject flightType 'return' missing returnMode", () => {
+    const result = searchInputSchema.safeParse({
+      flightType: "return",
+      from: "CDG",
+      to: "SOF",
+      departDateFrom: futureDate(10),
+      returnDateFrom: futureDate(17),
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("should reject a missing flightType", () => {
     const result = searchInputSchema.safeParse({
       from: "CDG",
