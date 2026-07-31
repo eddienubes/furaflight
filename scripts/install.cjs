@@ -64,7 +64,7 @@ const detectPlatformKey = () => {
   return `${platform}-${arch}`;
 };
 
-const getDestPath = () => path.join(__dirname, "bin", DEST_BINARY_NAME);
+const getDestPath = () => path.join(__dirname, "..", "bin", DEST_BINARY_NAME);
 
 /**
  * True only when running against a checkout of the source repo itself
