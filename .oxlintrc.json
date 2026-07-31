@@ -4,7 +4,9 @@
   "categories": {
     "correctness": "error"
   },
-  "rules": {},
+  "rules": {
+    "func-style": ["error", "expression"]
+  },
   "env": {
     "builtin": true
   }

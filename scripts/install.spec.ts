@@ -1,9 +1,9 @@
 import { createRequire } from "node:module";
 import { describe, expect, it } from "bun:test";
-import { getPlatformKey, PLATFORM_TARGETS } from "./scripts/platforms.ts";
+import { getPlatformKey, PLATFORM_TARGETS } from "./constants.ts";
 
 // install.cjs ships standalone in the published tarball (no imports beyond
-// Node builtins), so it can't import scripts/platforms.ts at runtime. We
+// Node builtins), so it can't import scripts/constants.ts at runtime. We
 // require it here the same way Node's own postinstall would, via a real
 // CommonJS require rather than a Bun-specific import, to keep the test
 // honest about how the file is actually consumed.
@@ -50,15 +50,14 @@ describe("install.cjs platform detection", () => {
   });
 
   it("should detect that this repo checkout is the source repo, not an installed package", () => {
-    // install.cjs lives at the repo root right next to src/main.ts here —
-    // in a real published install, src/ is never shipped (see `files` in
+    // A real published install never ships src/ (see `files` in
     // package.json), so this can only be true in the source repo itself.
     expect(install.isRunningInsideSourceRepo()).toBe(true);
   });
 });
 
-describe("install.cjs / scripts/platforms.ts parity", () => {
-  it("should list exactly the same set of platform keys as scripts/platforms.ts", () => {
+describe("install.cjs / scripts/constants.ts parity", () => {
+  it("should list exactly the same set of platform keys as scripts/constants.ts", () => {
     const fromInstall = Object.keys(install.PLATFORM_PACKAGES).sort();
     const fromPlatforms = PLATFORM_TARGETS.map((t) => getPlatformKey(t)).sort();
     expect(fromInstall).toEqual(fromPlatforms);

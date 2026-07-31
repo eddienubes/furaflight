@@ -15,7 +15,7 @@
     "furaflight": "bin/furaflight.exe"
   },
   "files": [
-    "install.cjs",
+    "scripts/install.cjs",
     "README.md",
     "LICENSE"
   ],
@@ -28,9 +28,9 @@
   "scripts": {
     "build": "bun build --compile --bytecode --minify --format esm --sourcemap --outfile dist/furaflight ./src/main.ts",
     "build:platforms": "bun run scripts/build-platforms.ts",
-    "generate:platforms": "bun run scripts/generate-platform-packages.ts",
+    "gen:platforms": "bun run scripts/generate-platform-packages.ts",
     "publish:platforms": "bun run scripts/publish-platforms.ts",
-    "postinstall": "node install.cjs",
+    "postinstall": "node scripts/install.cjs",
     "start": "bun run src/main.ts",
     "test": "bun test",
     "lint": "oxlint",

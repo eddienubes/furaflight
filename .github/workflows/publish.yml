@@ -36,7 +36,7 @@ jobs:
         run: bun run build
 
       - name: Generate platform package manifests
-        run: bun run generate:platforms
+        run: bun run gen:platforms
 
       - name: Build all 8 platform binaries (cross-compiled from this runner)
         run: bun run build:platforms
@@ -46,9 +46,5 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # Publishes all 8 @furaflight/mcp-<platform> packages first, then the
-      # main @furaflight/mcp package — so every version its
-      # optionalDependencies point at already exists by the time it's
-      # published (see scripts/publish-platforms.ts).
       - name: Publish platform packages, then the main package
         run: bun run publish:platforms
