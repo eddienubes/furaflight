@@ -84,7 +84,7 @@ export const PLATFORM_TARGETS: readonly PlatformTarget[] = [
     bunTarget: "bun-windows-x64",
     os: "win32",
     cpu: "x64",
-    binaryName: NAME,
+    binaryName: `${NAME}.exe`,
   },
   {
     packageSuffix: "win32-arm64",
@@ -92,7 +92,7 @@ export const PLATFORM_TARGETS: readonly PlatformTarget[] = [
     bunTarget: "bun-windows-arm64",
     os: "win32",
     cpu: "arm64",
-    binaryName: NAME,
+    binaryName: `${NAME}.exe`,
   },
 ];
 
