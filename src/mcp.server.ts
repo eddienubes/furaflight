@@ -4,7 +4,13 @@ import type { FlightSearchProvider } from "./flight-search.provider.ts";
 import { searchInputSchema } from "./search.schema.ts";
 
 export const createServer = (provider: FlightSearchProvider): McpServer => {
-  const server = new McpServer({ name: "flightlist-mcp", version: rootPkg.version });
+  const server = new McpServer({
+    name: "furaflight-mcp",
+    title: "furaflight-mcp",
+    version: rootPkg.version,
+    websiteUrl: "https://github.com/eddienubes/furaflight",
+    description: "Flights search engine MCP server. Find cheapest flights using natural language.",
+  });
 
   server.registerTool(
     "search",
@@ -18,9 +24,13 @@ free-text place names, comma-separated for multiple values.`,
     async (args) => {
       const flights = await provider.search(args.query);
       if (flights.length === 0) {
-        return { content: [{ type: "text", text: "No flights found for these criteria." }] };
+        return {
+          content: [{ type: "text", text: "No flights found for these criteria." }],
+        };
       }
-      return { content: [{ type: "text", text: JSON.stringify(flights, null, 2) }] };
+      return {
+        content: [{ type: "text", text: JSON.stringify(flights, null, 2) }],
+      };
     },
   );
 
