@@ -1,9 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import rootPkg from "../package.json" with { type: "json" };
 import type { FlightSearchProvider } from "./flight-search.provider.ts";
 import { searchInputSchema } from "./search.schema.ts";
 
 export const createServer = (provider: FlightSearchProvider): McpServer => {
-  const server = new McpServer({ name: "flightlist-mcp", version: "0.1.0" });
+  const server = new McpServer({ name: "flightlist-mcp", version: rootPkg.version });
 
   server.registerTool(
     "search",
