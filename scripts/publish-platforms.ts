@@ -3,7 +3,7 @@
  * the main package, so its `optionalDependencies` always
  * resolve once it lands on the registry.
  *
- * Pass --dry-run to forward `--dry-run` to every `bun publish` invocation —
+ * Pass --dry-run to forward `--dry-run` to every `npm publish` invocation —
  * the only mode this script should ever be invoked with outside of real CI.
  */
 
@@ -19,14 +19,17 @@ import {
 const publish = async (cwd: string, label: string, dryRun: boolean): Promise<void> => {
   const args = ["publish", "--access", "public", ...(dryRun ? ["--dry-run"] : [])];
   console.log(`\n[publish-platforms] publishing ${label}${dryRun ? " (dry run)" : ""}...`);
-  const proc = Bun.spawn(["bun", ...args], {
+  // Use npm, not bun, to publish: bun publish doesn't yet support npm's OIDC
+  // trusted-publishing flow (https://github.com/oven-sh/bun/issues/22423).
+  const proc = Bun.spawn(["npm", ...args], {
     cwd,
+    stdin: "inherit",
     stdout: "inherit",
     stderr: "inherit",
   });
   const exitCode = await proc.exited;
   if (exitCode !== 0) {
-    throw new Error(`bun publish failed for ${label} (exit code ${exitCode})`);
+    throw new Error(`npm publish failed for ${label} (exit code ${exitCode})`);
   }
 };
 
