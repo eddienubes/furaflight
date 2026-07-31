@@ -16,30 +16,18 @@
         "typescript": "^7.0.2",
       },
       "optionalDependencies": {
-        "@furaflight/mcp-darwin-arm64": "0.0.6",
-        "@furaflight/mcp-darwin-x64": "0.0.6",
-        "@furaflight/mcp-linux-arm64": "0.0.6",
-        "@furaflight/mcp-linux-arm64-musl": "0.0.6",
-        "@furaflight/mcp-linux-x64": "0.0.6",
-        "@furaflight/mcp-linux-x64-musl": "0.0.6",
-        "@furaflight/mcp-win32-arm64": "0.0.6",
-        "@furaflight/mcp-win32-x64": "0.0.6",
+        "@furaflight/mcp-darwin-arm64": "0.0.7",
+        "@furaflight/mcp-darwin-x64": "0.0.7",
+        "@furaflight/mcp-linux-arm64": "0.0.7",
+        "@furaflight/mcp-linux-arm64-musl": "0.0.7",
+        "@furaflight/mcp-linux-x64": "0.0.7",
+        "@furaflight/mcp-linux-x64-musl": "0.0.7",
+        "@furaflight/mcp-win32-arm64": "0.0.7",
+        "@furaflight/mcp-win32-x64": "0.0.7",
       },
     },
   },
   "packages": {
-    "@furaflight/mcp-darwin-arm64": ["@furaflight/mcp-darwin-arm64@0.0.6", "", { "os": "darwin", "cpu": "arm64" }, "sha512-9cHYW5fz5P5zDQ9K1y8Zo7CKEBCIB4YJaHtoIa8d7CVQHVunzA+GvA64jhealW4KGHb5KEX+9UJqbiFlexv5Kw=="],
-
-    "@furaflight/mcp-darwin-x64": ["@furaflight/mcp-darwin-x64@0.0.6", "", { "os": "darwin", "cpu": "x64" }, "sha512-YsoKjI9XtRCZpgo6smMycPFNBlgb+kSmY+bG0PCcn3mS2PvpHvIII7/c/gtSy1YBzbLGKtVwtJe7CTToPmqHtw=="],
-
-    "@furaflight/mcp-linux-arm64": ["@furaflight/mcp-linux-arm64@0.0.6", "", { "os": "linux", "cpu": "arm64" }, "sha512-krA9atxCp/r0ehWli3Q0RHeNKR7eai3rjsurjxUf5mqvcJ0PIw92w9ONk1+2V0KR/iRf7vMpAbqjNO4sSyUfkg=="],
-
-    "@furaflight/mcp-linux-arm64-musl": ["@furaflight/mcp-linux-arm64-musl@0.0.6", "", { "os": "linux", "cpu": "arm64" }, "sha512-Q22RSCmxRyk9C03otJIejwZvUd5zN0m0OtAf4SWhOFpoKy5X7Nqzdphb0TVZFdBzG6T7bzSgjP0FMqhaB7YrhQ=="],
-
-    "@furaflight/mcp-linux-x64": ["@furaflight/mcp-linux-x64@0.0.6", "", { "os": "linux", "cpu": "x64" }, "sha512-J/zPvQ6P6DZgwexJnNrdsOUWp999rmGWWuJmdHh93zo2fnkoe69UwLg0z7uuuNJv+WOAfcKNUc2JQxJXr+znNw=="],
-
-    "@furaflight/mcp-linux-x64-musl": ["@furaflight/mcp-linux-x64-musl@0.0.6", "", { "os": "linux", "cpu": "x64" }, "sha512-w5HY7e5izl8PM9t19ckQ4tFzAwzWcSxl1YLyJaWncVj7sTzvJCSO8fxOvjrbxIbB+0of+TSi/d1g1WNdhSlJiQ=="],
-
     "@hono/node-server": ["@hono/node-server@2.0.12", "", { "peerDependencies": { "hono": "^4" } }, "sha512-eWpQYr67tqJLeaSUl0Q+TquuYfUdTibpOJlUMV2FfUP7+KqCC5TufnwnlXL6mobZBJbGAYRd7ZvEBDCbLInjhg=="],
 
     "@modelcontextprotocol/sdk": ["@modelcontextprotocol/sdk@1.30.0", "", { "dependencies": { "@hono/node-server": "^1.19.9 || ^2.0.5", "ajv": "^8.17.1", "ajv-formats": "^3.0.1", "content-type": "^1.0.5", "cors": "^2.8.5", "cross-spawn": "^7.0.5", "eventsource": "^3.0.2", "eventsource-parser": "^3.0.0", "express": "^5.2.1", "express-rate-limit": "^8.2.1", "hono": "^4.11.4", "jose": "^6.1.3", "json-schema-typed": "^8.0.2", "pkce-challenge": "^5.0.0", "raw-body": "^3.0.0", "zod": "^3.25 || ^4.0", "zod-to-json-schema": "^3.25.1" }, "peerDependencies": { "@cfworker/json-schema": "^4.1.1" }, "optionalPeers": ["@cfworker/json-schema"] }, "sha512-xKd8OIzlqNzcqcNumGAa6g+PW2kjD5vrpcKOnfldAUPP3j7lnqMPwlTXQm8gF+UwH72z0lqaRbjr9hqGz0eITA=="],
