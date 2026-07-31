@@ -6,17 +6,32 @@ search API, so an LLM can search flights — including flexible date-range and
 duration-of-stay searches — without needing to know IATA codes or the
 upstream API's parameter names.
 
-## Requirements
+## Use as an MCP server
 
-- [Bun](https://bun.sh) — version pinned via `mise.toml`
+The server speaks MCP over stdio and is published to npm as `@furaflight/mcp`
+with precompiled binaries for every major platform — no local Bun/Node setup
+needed. Add it to your MCP client's config:
 
-## Install & run
+```json
+{
+  "mcpServers": {
+    "furaflight": {
+      "command": "npx",
+      "args": ["-y", "@furaflight/mcp"]
+    }
+  }
+}
+```
+
+For Claude Code specifically, you can instead register it via the CLI:
+
+```sh
+claude mcp add furaflight -- npx -y @furaflight/mcp
+```
+
+## Development
 
 ```sh
 bun install
 bun run src/main.ts
 ```
-
-The server speaks MCP over stdio. Point your MCP client (Claude Code, Claude
-Desktop, etc.) at `bun run <path-to-repo>/src/main.ts`, or run it directly
-via its `bin` entry once installed as a dependency.
