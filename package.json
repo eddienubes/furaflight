@@ -1,6 +1,6 @@
 {
   "name": "@furaflight/mcp",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "MCP server exposing a flight search tool backed by flightlist.io",
   "homepage": "https://github.com/eddienubes/furaflight#readme",
   "bugs": {
