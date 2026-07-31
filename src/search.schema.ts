@@ -51,37 +51,49 @@ const commonShape = {
   sort: z.enum(["price"]).default("price").describe("Sort order for results."),
 };
 
-export const searchInputSchema = z
-  .object({
-    flightType: z.enum(["oneway", "return"]),
-    returnMode: z
-      .enum(["dates", "nights"])
-      .optional()
-      .describe("'dates' for an explicit return window, 'nights' for a duration-of-stay search."),
-    departDateFrom: dateStringSchema.describe("Earliest departure date (YYYY-MM-DD)."),
-    departDateTo: dateStringSchema
-      .optional()
-      .describe(
-        "Latest departure date (YYYY-MM-DD); a range beyond a single day triggers a flexible search.",
-      ),
-    returnDateFrom: dateStringSchema
-      .optional()
-      .describe("Earliest return date (YYYY-MM-DD). Required when returnMode is 'dates'."),
-    returnDateTo: dateStringSchema.optional().describe("Latest return date (YYYY-MM-DD)."),
-    minNights: z
-      .number()
-      .int()
-      .min(0)
-      .optional()
-      .describe("Minimum nights at destination. Required when returnMode is 'nights'."),
-    maxNights: z
-      .number()
-      .int()
-      .min(0)
-      .optional()
-      .describe("Maximum nights at destination. Required when returnMode is 'nights'."),
-    ...commonShape,
-  })
+const onewaySchema = z.object({
+  flightType: z.literal("oneway"),
+  departDateFrom: dateStringSchema.describe("Earliest departure date (YYYY-MM-DD)."),
+  departDateTo: dateStringSchema
+    .optional()
+    .describe(
+      "Latest departure date (YYYY-MM-DD); a range beyond a single day triggers a flexible search.",
+    ),
+  ...commonShape,
+});
+
+const returnSchema = z.object({
+  flightType: z.literal("return"),
+  returnMode: z
+    .enum(["dates", "nights"])
+    .describe("'dates' for an explicit return window, 'nights' for a duration-of-stay search."),
+  departDateFrom: dateStringSchema.describe("Earliest departure date (YYYY-MM-DD)."),
+  departDateTo: dateStringSchema
+    .optional()
+    .describe(
+      "Latest departure date (YYYY-MM-DD); a range beyond a single day triggers a flexible search.",
+    ),
+  returnDateFrom: dateStringSchema
+    .optional()
+    .describe("Earliest return date (YYYY-MM-DD). Required when returnMode is 'dates'."),
+  returnDateTo: dateStringSchema.optional().describe("Latest return date (YYYY-MM-DD)."),
+  minNights: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .describe("Minimum nights at destination. Required when returnMode is 'nights'."),
+  maxNights: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .describe("Maximum nights at destination. Required when returnMode is 'nights'."),
+  ...commonShape,
+});
+
+const searchQuerySchema = z
+  .discriminatedUnion("flightType", [onewaySchema, returnSchema])
   .superRefine((data, ctx) => {
     if (data.departDateFrom < todayIsoDate()) {
       ctx.addIssue({
@@ -99,15 +111,6 @@ export const searchInputSchema = z
     }
 
     if (data.flightType !== "return") return;
-
-    if (data.returnMode === undefined) {
-      ctx.addIssue({
-        code: "custom",
-        message: "returnMode is required when flightType is 'return'.",
-        path: ["returnMode"],
-      });
-      return;
-    }
 
     if (data.returnMode === "dates") {
       if (data.returnDateFrom === undefined) {
@@ -163,5 +166,7 @@ export const searchInputSchema = z
       }
     }
   });
+
+export const searchInputSchema = z.object({ query: searchQuerySchema });
 
 export type SearchInput = z.infer<typeof searchInputSchema>;

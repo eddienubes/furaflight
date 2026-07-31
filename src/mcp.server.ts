@@ -15,7 +15,7 @@ free-text place names, comma-separated for multiple values.`,
       inputSchema: searchInputSchema,
     },
     async (args) => {
-      const flights = await provider.search(args);
+      const flights = await provider.search(args.query);
       if (flights.length === 0) {
         return { content: [{ type: "text", text: "No flights found for these criteria." }] };
       }
