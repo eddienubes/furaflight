@@ -16,20 +16,9 @@ import {
   REPO_ROOT,
 } from "./constants.ts";
 
-const publish = async (
-  cwd: string,
-  label: string,
-  dryRun: boolean,
-): Promise<void> => {
-  const args = [
-    "publish",
-    "--access",
-    "public",
-    ...(dryRun ? ["--dry-run"] : []),
-  ];
-  console.log(
-    `\n[publish-platforms] publishing ${label}${dryRun ? " (dry run)" : ""}...`,
-  );
+const publish = async (cwd: string, label: string, dryRun: boolean): Promise<void> => {
+  const args = ["publish", "--access", "public", ...(dryRun ? ["--dry-run"] : [])];
+  console.log(`\n[publish-platforms] publishing ${label}${dryRun ? " (dry run)" : ""}...`);
   const proc = Bun.spawn(["bun", ...args], {
     cwd,
     stdout: "inherit",
@@ -45,11 +34,7 @@ const main = async (): Promise<void> => {
   const dryRun = process.argv.includes("--dry-run");
 
   for (const target of PLATFORM_TARGETS) {
-    await publish(
-      path.join(PLATFORMS_DIR, target.packageSuffix),
-      target.packageName,
-      dryRun,
-    );
+    await publish(path.join(PLATFORMS_DIR, target.packageSuffix), target.packageName, dryRun);
   }
 
   await publish(REPO_ROOT, `${PACKAGE_SCOPE}/${PACKAGE_BASE_NAME}`, dryRun);

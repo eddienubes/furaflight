@@ -104,6 +104,4 @@ export const PLATFORM_TARGETS: readonly PlatformTarget[] = [
  * on purpose.
  */
 export const getPlatformKey = (target: PlatformTarget): string =>
-  target.libc
-    ? `${target.os}-${target.cpu}-${target.libc}`
-    : `${target.os}-${target.cpu}`;
+  target.libc ? `${target.os}-${target.cpu}-${target.libc}` : `${target.os}-${target.cpu}`;
