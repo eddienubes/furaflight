@@ -113,10 +113,10 @@ const printUnsupportedPlatformError = (platformKey) => {
   );
 };
 
-const printMissingPackageError = (platformKey, binaryPath) => {
+const printMissingPackageError = (platformKey, entry) => {
   console.error(
     [
-      `furaflight: could not find the "${binaryPath}" package on disk (expected for platform "${platformKey}").`,
+      `furaflight: could not find the "${entry.pkg}" package on disk (expected for platform "${platformKey}").`,
       "This usually means it was skipped during install — try reinstalling without",
       '"--ignore-scripts" and without "--no-optional" (or your package manager\'s',
       "equivalent flags), so npm can download the platform-specific binary package.",
@@ -125,10 +125,10 @@ const printMissingPackageError = (platformKey, binaryPath) => {
 };
 
 const main = () => {
-  // if (isRunningInsideSourceRepo()) {
-  //   console.log("furaflight: running inside the source repo, skipping binary placement.");
-  //   return;
-  // }
+  if (isRunningInsideSourceRepo()) {
+    console.log("furaflight: running inside the source repo, skipping binary placement.");
+    return;
+  }
 
   const platformKey = detectPlatformKey();
   const entry = PLATFORM_PACKAGES[platformKey];
@@ -139,12 +139,11 @@ const main = () => {
     return;
   }
 
-  const binaryPath = path.resolve("platforms", platformKey, "bin", entry.bin);
   let resolvedBinaryPath;
   try {
-    resolvedBinaryPath = require.resolve(binaryPath);
+    resolvedBinaryPath = require.resolve(`${entry.pkg}/bin/${entry.bin}`);
   } catch {
-    printMissingPackageError(platformKey, binaryPath);
+    printMissingPackageError(platformKey, entry);
     process.exit(1);
     return;
   }
