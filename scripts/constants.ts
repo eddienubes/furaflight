@@ -21,7 +21,7 @@ export interface PlatformTarget {
   binaryName: string;
 }
 
-export const USERNAME = 'eddienubes';
+export const USERNAME = "eddienubes";
 export const NAME = `furaflight`;
 export const PACKAGE_SCOPE = `@${NAME}`;
 export const PACKAGE_BASE_NAME = "mcp";
