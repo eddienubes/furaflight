@@ -8,7 +8,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import rootPkg from "../package.json" with { type: "json" };
-import { PLATFORM_TARGETS, PLATFORMS_DIR } from "./constants.ts";
+import {
+  NAME,
+  PLATFORM_TARGETS,
+  PLATFORMS_DIR,
+  USERNAME,
+} from "./constants.ts";
 
 const main = (): void => {
   for (const target of PLATFORM_TARGETS) {
@@ -26,10 +31,19 @@ const main = (): void => {
       cpu: [target.cpu],
       ...(target.libc ? { libc: [target.libc] } : {}),
       files: ["bin"],
+      repository: {
+        type: "git",
+        url: `git+https://github.com/${USERNAME}/${NAME}.git`,
+      },
     };
 
-    fs.writeFileSync(path.join(dir, "package.json"), `${JSON.stringify(manifest, null, 2)}\n`);
-    console.log(`generated platforms/${target.packageSuffix}/package.json (v${rootPkg.version})`);
+    fs.writeFileSync(
+      path.join(dir, "package.json"),
+      `${JSON.stringify(manifest, null, 2)}\n`,
+    );
+    console.log(
+      `generated platforms/${target.packageSuffix}/package.json (v${rootPkg.version})`,
+    );
   }
 };
 
