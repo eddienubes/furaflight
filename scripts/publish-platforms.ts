@@ -1,6 +1,6 @@
 /**
  * CI publish orchestration: publishes all 8 platform packages first, then
- * the main `@furaflight/mcp` package, so its `optionalDependencies` always
+ * the main package, so its `optionalDependencies` always
  * resolve once it lands on the registry.
  *
  * Pass --dry-run to forward `--dry-run` to every `bun publish` invocation —
@@ -8,11 +8,28 @@
  */
 
 import path from "node:path";
-import { PLATFORM_TARGETS, PLATFORMS_DIR, REPO_ROOT } from "./constants.ts";
+import {
+  PACKAGE_BASE_NAME,
+  PACKAGE_SCOPE,
+  PLATFORM_TARGETS,
+  PLATFORMS_DIR,
+  REPO_ROOT,
+} from "./constants.ts";
 
-const publish = async (cwd: string, label: string, dryRun: boolean): Promise<void> => {
-  const args = ["publish", "--access", "public", ...(dryRun ? ["--dry-run"] : [])];
-  console.log(`\n[publish-platforms] publishing ${label}${dryRun ? " (dry run)" : ""}...`);
+const publish = async (
+  cwd: string,
+  label: string,
+  dryRun: boolean,
+): Promise<void> => {
+  const args = [
+    "publish",
+    "--access",
+    "public",
+    ...(dryRun ? ["--dry-run"] : []),
+  ];
+  console.log(
+    `\n[publish-platforms] publishing ${label}${dryRun ? " (dry run)" : ""}...`,
+  );
   const proc = Bun.spawn(["bun", ...args], {
     cwd,
     stdout: "inherit",
@@ -28,10 +45,14 @@ const main = async (): Promise<void> => {
   const dryRun = process.argv.includes("--dry-run");
 
   for (const target of PLATFORM_TARGETS) {
-    await publish(path.join(PLATFORMS_DIR, target.packageSuffix), target.packageName, dryRun);
+    await publish(
+      path.join(PLATFORMS_DIR, target.packageSuffix),
+      target.packageName,
+      dryRun,
+    );
   }
 
-  await publish(REPO_ROOT, "@furaflight/mcp", dryRun);
+  await publish(REPO_ROOT, `${PACKAGE_SCOPE}/${PACKAGE_BASE_NAME}`, dryRun);
 
   console.log("\n[publish-platforms] done.");
 };

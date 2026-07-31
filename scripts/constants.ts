@@ -21,9 +21,9 @@ export interface PlatformTarget {
   binaryName: string;
 }
 
-const NAME = `furaflight`;
-const PACKAGE_SCOPE = `@${NAME}`;
-const PACKAGE_BASE_NAME = "mcp";
+export const NAME = `furaflight`;
+export const PACKAGE_SCOPE = `@${NAME}`;
+export const PACKAGE_BASE_NAME = "mcp";
 
 export const PLATFORM_TARGETS: readonly PlatformTarget[] = [
   {
@@ -104,4 +104,6 @@ export const PLATFORM_TARGETS: readonly PlatformTarget[] = [
  * on purpose.
  */
 export const getPlatformKey = (target: PlatformTarget): string =>
-  target.libc ? `${target.os}-${target.cpu}-${target.libc}` : `${target.os}-${target.cpu}`;
+  target.libc
+    ? `${target.os}-${target.cpu}-${target.libc}`
+    : `${target.os}-${target.cpu}`;

@@ -1,5 +1,5 @@
 /**
- * Compiles the platform-specific `furaflight` binary for every target in
+ * Compiles the platform-specific binary for every target in
  * `scripts/constants.ts` (or a filtered subset — see below), using Bun's
  * cross-compilation support. This can all run from a single host/OS (no
  * runner matrix needed).

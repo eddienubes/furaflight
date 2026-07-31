@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   publish:
@@ -32,19 +33,14 @@ jobs:
       - name: Format check
         run: bun run format:check
 
-      - name: Build (single-target local-dev artifact, dist/furaflight)
+      - name: Build
         run: bun run build
 
       - name: Generate platform package manifests
         run: bun run gen:platforms
 
-      - name: Build all 8 platform binaries (cross-compiled from this runner)
+      - name: Build all 8 platform binaries
         run: bun run build:platforms
-
-      - name: Configure npm auth
-        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish platform packages, then the main package
         run: bun run publish:platforms
